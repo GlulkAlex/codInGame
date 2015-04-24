@@ -72,72 +72,129 @@ Solution(s): <span id="polyrootsolutions">?</span>
 
 <h2>Calculator</h2>
 
-<p>Once properly implemented, this calculator can compute values of variables
+<p>Once properly implemented, 
+this calculator can 
+compute values of variables
 depending on other variables.</p>
 
-<p>Only very simple expressions are valid, here. It can be one of:</p>
+<p>Only very simple expressions are valid, here. 
+It can be one of:</p>
 
 <ul>
   <li>A number</li>
   <li>The name of a variable (from 'a' to 'j')</li>
-  <li>An expression of the form '&lt;expr&gt; &lt;op&gt; &lt;expr&gt;' where
-    &lt;expr&gt; is a number or a variable name, and &lt;op&gt; is one of + - * /<br />
-    Note that spaces are important, and that there cannot be more than one operation per cell.</li>
+  <li>An expression of the form 
+		'&lt;expr&gt; &lt;op&gt; &lt;expr&gt;' where
+    &lt;expr&gt; is 
+		a number or 
+		a variable name, and &lt;op&gt; is one of + - * /<br />
+    Note that 
+		spaces are important, and that 
+		there cannot be 
+		more than one operation per cell.</li>
 </ul>
 
-<p>Any error, such as a malformed expression, or cyclic references between
-variables, will result in NaN (Not-a-Number).</p>
+<p>Any error, such as 
+a malformed expression, or 
+cyclic references between
+variables, will result 
+in NaN (Not-a-Number).</p>
 
 <form class="form-horizontal">
   <div class="form-group">
-    <label for="calculatorexpra" class="col-sm-1 control-label">a =</label>
+    <label 
+			for="calculatorexpra" 
+			class="col-sm-1 control-label">a =</label>
     <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexpra" value="0">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexpra" 
+				value="0">
     </div>
-    <div class="col-sm-2 help-block">
+    <div 
+			class="col-sm-2 help-block">
       = <span id="calculatorvala">?</span>
     </div>
   </div>
-  <div class="form-group">
-    <label for="calculatorexprb" class="col-sm-1 control-label">b =</label>
+  <div 
+		class="form-group">
+    <label 
+			for="calculatorexprb" 
+			class="col-sm-1 control-label">b =</label>
     <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexprb" value="0">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexprb" 
+				value="0">
     </div>
-    <div class="col-sm-2 help-block">
-      = <span id="calculatorvalb">?</span>
+    <div 
+			class="col-sm-2 help-block">
+      = <span 
+					id="calculatorvalb">?</span>
     </div>
   </div>
   <div class="form-group">
-    <label for="calculatorexprc" class="col-sm-1 control-label">c =</label>
+    <label 
+			for="calculatorexprc" 
+			class="col-sm-1 control-label">c =</label>
     <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexprc" value="0">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexprc" 
+				value="0">
     </div>
     <div class="col-sm-2 help-block">
-      = <span id="calculatorvalc">?</span>
+      = <span 
+					id="calculatorvalc">?</span>
     </div>
   </div>
   <div class="form-group">
-    <label for="calculatorexprd" class="col-sm-1 control-label">d =</label>
+    <label 
+			for="calculatorexprd" 
+			class="col-sm-1 control-label">d =</label>
     <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexprd" value="0">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexprd" 
+				value="0">
     </div>
     <div class="col-sm-2 help-block">
-      = <span id="calculatorvald">?</span>
+      = <span 
+					id="calculatorvald">?</span>
     </div>
   </div>
   <div class="form-group">
-    <label for="calculatorexpre" class="col-sm-1 control-label">e =</label>
-    <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexpre" value="0">
+    <label 
+			for="calculatorexpre" 
+			class="col-sm-1 control-label">e =</label>
+    <div 
+			class="col-sm-2">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexpre" 
+				value="0">
     </div>
     <div class="col-sm-2 help-block">
-      = <span id="calculatorvale">?</span>
+      = <span 
+					id="calculatorvale">?</span>
     </div>
   </div>
-  <div class="form-group">
-    <label for="calculatorexprf" class="col-sm-1 control-label">f =</label>
+  <div 
+		class="form-group">
+    <label 
+			for="calculatorexprf" 
+			class="col-sm-1 control-label">f =</label>
     <div class="col-sm-2">
-      <input type="text" class="form-control" id="calculatorexprf" value="0">
+      <input 
+				type="text" 
+				class="form-control" 
+				id="calculatorexprf" 
+				value="0">
     </div>
     <div class="col-sm-2 help-block">
       = <span id="calculatorvalf">?</span>
