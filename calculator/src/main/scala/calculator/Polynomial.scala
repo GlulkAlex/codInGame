@@ -1,38 +1,45 @@
 package calculator
 
 /*
+Your overall score for this assignment is 6.00 out of 10.00
+
+The code you submitted did not pass all of our tests: your submission achieved a score of
+6.00 out of 10.00 in our tests.
+
+In order to find bugs in your code, we advise to perform the following steps:
+ - Take a close look at the test output that you can find below: it should point you to
+   the part of your code that has bugs.
+ - Run the tests that we provide with the handout on your code.
+ - The tests we provide do not test your code in depth: they are very incomplete. In order
+   to test more aspects of your code, write your own unit tests.
+ - Take another very careful look at the assignment description. Try to find out if you
+   misunderstood parts of it. While reading through the assignment, write more tests.
+
+Below you can find a short feedback for every individual test that failed.
+
+======== LOG OF FAILED TESTS ========
+
+Your solution achieved a testing score of 12 out of 20.
+Below you can see a short feedback for every test that failed, indicating the reason
+for the test failure and how many points you lost for each individual test.
+
+An internal error happened while testing your code. Please send your entire feedback message
+to one of the teaching assistants. success 12, fail 3, total 20
+
+[Test Description] computeSolutions
+[Observed Error] -5.562827743418748 was not -0.1980358747915814 plus or minus 1.0E-5
+[Lost Points] 3
+
+Unique identifier of this grade is 5786137a-2e0a-4c37-9c10-3c382de70958. This identifier will uniquely identify your assignment throughout the grading system.
+*/
+/*
 After compiling 
 with 'webUI/fastOptJS' and 
 refreshing your browser, 
 you can 
 play with the 'root solver'.*/
 object Polynomial {
-	
-  def sqrt( x: Double ) = {
-      def abs( x: Double ) = if ( x >= 0 ) {
-        x
-      } else {
-        -x
-      }
-
-      def sqrtIter( guess: Double ): Double =
-        if ( isGoodEnough( guess ) ) {
-          guess
-        } else {
-          sqrtIter( improve( guess ) )
-        }
-
-      def isGoodEnough( guess: Double ) =
-        abs( guess * guess - x ) < x * 0.0001 //epsilon value
-      //or:
-      //abs(guess * guess - x) / x < 0.001
-
-      def improve( guess: Double ) =
-        ( guess + x / guess ) / 2
-
-    sqrtIter( 1.0 )
-  }  
-	
+		
 	/*
 	the intermediary discriminant, 
 	which we call 'delta':
@@ -84,8 +91,8 @@ object Polynomial {
 					Set( root )  				
 				} else {
 					//& 2 signals ?
-					val root1: Double = ( -b() + sqrt( delta() )) / 2 * a()
-					val root2: Double = ( -b() - sqrt( delta() )) / 2 * a()
+					val root1: Double = ( -b() + Math.sqrt( delta() )) / 2 * a()
+					val root2: Double = ( -b() - Math.sqrt( delta() )) / 2 * a()
 					
 					Set( root1, root2 ) 				
 				}
@@ -101,8 +108,8 @@ object Polynomial {
 					Set( root )
 				}
 				case _ => {
-					val root1: Double = ( -b() + sqrt( delta() )) / 2 * a()
-					val root2: Double = ( -b() - sqrt( delta() )) / 2 * a()
+					val root1: Double = ( -b() + Math.sqrt( delta() )) / 2 * a()
+					val root2: Double = ( -b() - Math.sqrt( delta() )) / 2 * a()
 					
 					Set( root1, root2 )
 				}
