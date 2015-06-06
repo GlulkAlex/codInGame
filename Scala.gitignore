@@ -1,0 +1,31 @@
+*.class
+*.log
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+## '.worksheet' directory excluded, but files not
+#.worksheet
+## matches all files inside directory '.worksheet' with infinite depth
+.worksheet/**
+## ? only files, but not folders & they content ?
+.worksheet/*
+# not so much to save from here, not important
+.settings
+
+# exclude everything 
+/*
+# except directory foo/bar
+!/scr
+!*.md
+!*.txt
