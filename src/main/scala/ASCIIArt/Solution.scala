@@ -71,11 +71,15 @@ CONSTRAINTS :
  */
 object Solution extends App {
   /*helpers starts*/
-  val filename = "Test_1_input.txt"
+  val filename =
+  //"Test_1_input.txt"
+    "Test_2_input.txt"
   val filePath =
   //E:\Java\Scala\sbt\projects\codInGame\src\main\scala\ASCIIArt\Solution.scala
   //E:\Java\Scala\sbt\projects\codInGame\src\test\scala\testArtASCII\.Test only one letter'E'\Test_1_input.txt
-    "E:\\Java\\Scala\\sbt\\projects\\codInGame\\src\\test\\scala\\testArtASCII\\.Test only one letter'E'\\"
+  //"E:\\Java\\Scala\\sbt\\projects\\codInGame\\src\\test\\scala\\testArtASCII\\.Test only one letter'E'\\"
+  //E:\Java\Scala\sbt\projects\codInGame\src\test\scala\testArtASCII\.Test'MANHATTAN'\Test_2_input.txt
+    "E:\\Java\\Scala\\sbt\\projects\\codInGame\\src\\test\\scala\\testArtASCII\\.Test'MANHATTAN'\\"
   val currFile = Source
     .fromFile(filePath + filename)
   /*val currFileLines = Source
@@ -136,9 +140,37 @@ object Solution extends App {
 
   def findLetter(
                   letter: String,
-                          alphabet: String
-                  ): Int = {
+                  alphabet: String
+                  ): Int =
+  {
     alphabet.indexOf(letter)
+  }
+
+  def showText(
+                text: String,
+                alphabet: String,
+                letterHeight: Int,
+                letterWidth: Int,
+                letterMatrix: Array[String],
+                textMatrix: Array[String]
+                ): Unit =
+  {
+    for (letter <- text) {
+      /*side effect*/
+      addLetter(
+                 letterNumber = alphabet.indexOf(letter.toUpper),
+                 letterHeight = letterHeight,
+                 letterWidth = letterWidth,
+                 letterMatrix = letterMatrix,
+                 textMatrix = textMatrix
+               )
+    }
+    for (row <- textMatrix) {
+      /*side effect*/
+      println(
+               row
+             )
+    }
   }
 
   def showLetter(
@@ -150,10 +182,56 @@ object Solution extends App {
   {
     if (letterMatrix.nonEmpty) {
       for (row <- letterMatrix) {
-        println(s"${ row.drop(letterNumber * letterWidth).take(letterWidth) }")
+        val letter: String =
+          if (letterNumber == -1) {
+            row.takeRight(letterWidth)
+          } else {
+            row.drop(letterNumber * letterWidth).take(letterWidth)
+          }
+
+        println(s"${ letter }")
+        //println(s"${ row.drop(letterNumber * letterWidth).take(letterWidth) }")
+        /*println(s"${
+          row
+            .slice(
+              letterNumber * letterWidth,
+              letterWidth) }")*/
       }
     } else {
       println("has no letters to print from")
+    }
+  }
+
+  def addLetter(
+                 letterNumber: Int,
+                 letterHeight: Int,
+                 letterWidth: Int,
+                 letterMatrix: Array[String],
+                 textMatrix: Array[String]
+                 ): Unit =
+  {
+    if (letterMatrix.nonEmpty) {
+      for (row <- letterMatrix.indices /*0 until letterMatrix.length*/ ) {
+        val newLetter: String =
+          if (letterNumber == -1) {
+            letterMatrix(row).takeRight(letterWidth)
+          } else {
+            letterMatrix(row).drop(letterNumber * letterWidth).take(letterWidth)
+          }
+        /*letterMatrix(row)
+          .slice        (
+                          letterNumber * letterWidth,
+                          letterWidth)*/
+
+        //if (textMatrix(row).isEmpty) {
+        if (textMatrix(row) == null) {
+          textMatrix(row) = newLetter
+        } else {
+          textMatrix(row) += newLetter
+        }
+      }
+    } else {
+      println("has no letters to add to")
     }
   }
 
@@ -182,6 +260,9 @@ object Solution extends App {
     }
   /*helper start*/
   val rowsArray: Array[String] = new Array(h)
+  val textArray: Array[String] =
+  //new Array(h)
+    new Array(h).padTo(h, "")
   /*helper end*/
   for (i <- 0 until h) {
     val row: String =
@@ -204,6 +285,13 @@ object Solution extends App {
   println(s"l:$l")
   println(s"h:$h")
   println(s"t:$t")
+  println(s"textMatrix:${ textArray.headOption }")
+  println(s"textMatrix.isEmpty:${ textArray.isEmpty }")
+  println(s"textMatrix.isDefinedAt(0):${ textArray.isDefinedAt(0) }")
+  println(s"alphabetChars:${ alphabetChars }")
+  println(s"alphabetChars.slice(3,4):${ alphabetChars.slice(3, 4) }")
+  println(s"alphabetChars.slice(4,3):${ alphabetChars.slice(4, 3) }")
+  println(s"alphabetChars.indexOf('!'):${ alphabetChars.indexOf("!") }")
   //println(s"fileContent:$fileContent")
   /*println(s"fileContent line2:${fileContent.take(1)}")
   println(s"fileContent.take(2):${fileContent.take(2)}")
@@ -214,9 +302,26 @@ object Solution extends App {
   println(s"fileContent.isEmpty:${fileContent.isEmpty}")
   println(s"fileContent.isTraversableAgain:${fileContent.isTraversableAgain}")*/
   showLetter(
-              letterNumber = alphabetChars.indexOf(t),
+              letterNumber =
+                alphabetChars.indexOf(t.headOption.getOrElse("!")),
               letterHeight = h,
               letterWidth = l,
               letterMatrix = rowsArray
             )
+  showLetter(
+              letterNumber =
+                alphabetChars.indexOf("!"),
+              letterHeight = h,
+              letterWidth = l,
+              letterMatrix = rowsArray
+            )
+  showText(
+            text = t,
+            alphabet = alphabetChars,
+            letterHeight = h,
+            letterWidth = l,
+            letterMatrix = rowsArray,
+            textMatrix = textArray
+          )
+
 }
