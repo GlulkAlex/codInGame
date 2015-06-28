@@ -421,6 +421,8 @@ object Player extends App {
               //minDifference =
               //this                =
               //self: Int                =>
+
+              /*difference may be same but indexes are different*/
               var stateIndex: Int =
               //runeState.leftState.index
               //newLeftIndex
@@ -483,6 +485,9 @@ object Player extends App {
                     scala.math.abs(newLetterIndex - runeState.middleState.index)*/
                   /*same*/
                   //stateIndex = runeState.middleState.index
+                  /*difference may be same but indexes are different*/
+                  stateIndex =
+                    newRightIndex
                 } else {
                   /*same*/
                 }
@@ -531,6 +536,8 @@ object Player extends App {
                   /*difference =
                     scala.math.abs(newLetterIndex - runeState.rightState.index)*/
                   /*stateIndex = runeState.rightState.index*/
+                  stateIndex =
+                    newLeftIndex
 
                   /*newLeftIndex = newLetterIndex
                   newMiddleIndex = middleIndex//newMiddleIndex
@@ -840,9 +847,9 @@ object Player extends App {
   Failure: Bilbo spelled: MQVHZ
    */
   /*
-  TODO
   Long Spell (last 24 test)
-  my best result: 2599
+  my best result: (was 2599)
+  >>is 1520<<
   The magic phrase is:
   THREE RINGS FOR THE ELVEN KINGS UNDER THE SKY SEVEN FOR THE DWARF LORDS IN THEIR HALLS OF STONE NINE FOR MORTAL MEN DOOMED TO DIE ONE FOR THE DARK LORD ON HIS DARK THRONEIN THE LAND OF MORDOR WHERE THE SHADOWS LIE ONE RING TO RULE THEM ALL ONE RING TO FIND THEM ONE RING TO BRING THEM ALL AND IN THE DARKNESS BIND THEM IN THE LAND OF MORDOR WHERE THE SHADOWS LIE
   Failure: Bilbo has too many actions to perform (infinite loop?).
@@ -861,7 +868,6 @@ object Player extends App {
   & 'GU' not optimal
    */
   /*
-  TODO
   The magic phrase is:
   O OROFARNE LASSEMISTA CARNIMIRIE O ROWAN FAIR UPON YOUR HAIR HOW WHITE THE BLOSSOM LAY
   Failure:
@@ -879,7 +885,8 @@ object Player extends App {
   //" E"
   //" T"
   //"GU"
-  "Q A"
+  //"Q A"//spellOutPhrase Q17 A:++++.<.>>>. 13-17=-4
+  "ISTA"//spellOutPhrase I9STA:++++.++++++++++.+.>>. 13-9=4
   //"GUZ M"
   //  "NA"
     //"MINAS"
@@ -893,9 +900,9 @@ object Player extends App {
                              spell = "",
                              //previousLetter = 'R',
                              currentRune = LeftRune,
-                             leftIndex = 0,//M
-                             middleIndex = 0,//E
-                             rightIndex = 0,//A
+                             leftIndex = 13,//M
+                             middleIndex = 5,//E
+                             rightIndex = 1,//A
                              alphabet = magicAlphabet
                            )
            }"
