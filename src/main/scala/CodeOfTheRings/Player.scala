@@ -257,19 +257,46 @@ object Player extends App {
   >>letters (forward) from 'space' to 27 / 3 = 9 'H' included
     max controls length (when set up) '>>>--------' = 11
   */
-  trait RunePosition
+  trait Rune
 
-  case object Left
+  case object LeftRune extends Rune
 
-  case object Middle
+  case object MiddleRune extends Rune
 
-  case object Right
+  case object RightRune extends Rune
+
+  trait RuneLetter
+
+  case class LeftLetter(index: Int) extends RuneLetter
+
+  case class MiddleLetter(index: Int) extends RuneLetter
+
+  case class RightLetter(index: Int) extends RuneLetter
+
+  case class RuneState(
+                        currentRune: Rune,
+                        leftState: LeftLetter,
+                        middleState: MiddleLetter,
+                        rightState: RightLetter
+                        )
 
   def spellOutPhrase(
                       phrase: String,
                       /*no commands*/
                       spell: String = "",
-                      previousLetter: Char = ' ',
+                      //previousLetter: Char = ' ',
+                      currentRune: Rune = MiddleRune,
+                      leftIndex: Int = 0,
+                      middleIndex: Int = 0,
+                      rightIndex: Int = 0,
+                      /*runeState: RuneState =
+                      RuneState(
+                                 currentRune = MiddleRune,
+                                 leftState = LeftLetter(index = 0),
+                                 middleState = MiddleLetter(index = 0),
+                                 rightState = RightLetter(index = 0)
+                               )
+                      ,*/
                       //isSpaceUsed: Boolean = false,
                       alphabet: IndexedSeq[Char]
                       ): String =
@@ -279,36 +306,384 @@ object Player extends App {
     } else {
       /*or hardcode this as '27'*/
       val alphabetLength = alphabet.length
-      val previousLetterIndex =
-        alphabet.indexOf(previousLetter)
+      /*val previousLetterIndex =
+        alphabet.indexOf(previousLetter)*/
       val newLetterIndex =
         alphabet.indexOf(phrase.head)
-      var spaceUsed = false
+      //var spaceUsed = false
+      var newCurrentRune: Rune =
+      //MiddleRune
+      //runeState.currentRune
+        currentRune
+      var newLeftIndex = leftIndex
+      var newMiddleIndex = middleIndex
+      var newRightIndex = rightIndex
 
-      val spaceSymbol = ">.<"
+      /*if 'spaceUsed' then here defined actual rune position*/
+      /*val spaceSymbol: (String, Rune)/*(String,Seq[Rune])*/ =
+      /*">.<"*/
+      //runeState.currentRune match {
+        currentRune match {
+          case LeftRune => {
+            /*side effect*/
+            //newCurrentRune = LeftRune
+            /*return*/
+            ("<.>", LeftRune)
+          }
+          case MiddleRune => {
+            /*side effect*/
+            //newCurrentRune = RightRune
+            /*return*/
+            (">>.<",RightRune)
+          }
+          case RightRune => {
+            /*side effect*/
+            //newCurrentRune = RightRune
+            /*return*/
+            (">.<",RightRune)
+          }
+        }*/
+
+      var controlPrefix: String = ""
       val newLetter: String =
-        if (newLetterIndex != previousLetterIndex) {
+        if (
+          //newLetterIndex != previousLetterIndex
+          newLetterIndex != leftIndex &&
+          newLetterIndex != middleIndex &&
+          newLetterIndex != rightIndex
+        ) {
+          /*completely different new letter*/
           if (
             newLetterIndex == 0 &&
-            (previousLetterIndex>2 || (alphabetLength - previousLetterIndex)>2)
+            /*(previousLetterIndex > 2 || (alphabetLength - previousLetterIndex) > 2)*/
+            /*'3' max for 'MiddleRune'*/
+            //(previousLetterIndex > 3 || (alphabetLength - previousLetterIndex) > 3)
+            (leftIndex.min(middleIndex).min(rightIndex) > 3 ||
+             (alphabetLength - leftIndex.min(middleIndex).min(rightIndex)) > 3)
           ) {
-            /*'space'*/
+            /*special 'space' if not available more close letters*/
+
             /*side effect*/
-            spaceUsed = true
-            /*return*/
-              spaceSymbol
+            //spaceUsed = true
+            /*set method parameters*/
+            /*spaceSymbol._2 match {
+              case LeftRune => {
+                newLeftIndex = leftIndex
+                newMiddleIndex = middleIndex
+                newRightIndex = rightIndex
+              }
+              case MiddleRune => {
+                newLeftIndex = leftIndex
+                newMiddleIndex = middleIndex
+                newRightIndex = rightIndex
+              }
+              case RightRune => {
+                newLeftIndex = leftIndex
+                newMiddleIndex = middleIndex
+                newRightIndex = rightIndex
+              }
+            }*/
+
+            /*return value*/
+            //spaceSymbol._1
+            newLeftIndex = leftIndex
+            newMiddleIndex = middleIndex
+            newRightIndex = rightIndex
+
+            currentRune match {
+              case LeftRune => {
+                /*side effect*/
+                newCurrentRune = LeftRune
+                /*return*/
+                "<.>"
+              }
+              case MiddleRune => {
+                /*side effect*/
+                newCurrentRune = RightRune
+                /*return*/
+                ">>.<"
+              }
+              case RightRune => {
+                /*side effect*/
+                newCurrentRune = RightRune
+                /*return*/
+                ">.<"
+              }
+            }
           } else {
-            if (newLetterIndex > previousLetterIndex) {
+            /*Letter, not a 'space'*/
+
+            newCurrentRune =
+              //runeState.currentRune
+              currentRune
+            val closestIndex: Int = {
+              //var minDifference: Int = {
+              //minDifference =
+              //this                =
+              //self: Int                =>
+              var stateIndex: Int =
+              //runeState.leftState.index
+              //newLeftIndex
+                newMiddleIndex
+              //newRightIndex
+
+              var difference: Int =
+              //scala.math.abs(newLetterIndex - runeState.leftState.index)
+                scala.math.abs(newLetterIndex - stateIndex)
+              /*side effect*/
+              newCurrentRune =
+                //LeftRune
+                MiddleRune
+
+              /*newLeftIndex = leftIndex//newLetterIndex
+              newMiddleIndex = newLetterIndex//newMiddleIndex
+              newRightIndex = rightIndex//newRightIndex*/
+
+              /*compare with neighbors*/
+              if (
+              //difference > scala.math.abs(newLetterIndex - runeState.middleState.index)
+                difference > (scala.math.abs(newLetterIndex - newRightIndex) + 1) ||
+                difference > (alphabetLength - newLetterIndex + newRightIndex + 1)
+              ) {
+                /*'Right' with '>' clother then 'Middle'*/
+                difference =
+                  //scala.math.abs(newLetterIndex - runeState.middleState.index)
+                  scala.math.abs(newLetterIndex - newRightIndex)
+                stateIndex =
+                  //runeState.middleState.index
+                  newRightIndex
+
+                newCurrentRune =
+                  RightRune
+              } else if (
+              //difference == scala.math.abs(newLetterIndex - runeState.middleState.index)
+                difference == scala.math.abs(newLetterIndex - newRightIndex)
+              ) {
+                /*at the moment 'newCurrentRune' = 'MiddleRune'*/
+                if (
+                //newCurrentRune == LeftRune &&
+                //newCurrentRune == runeState.currentRune
+                  newCurrentRune == currentRune
+                ) {
+                  /*same, & stay put*/
+                } else if (
+                //newCurrentRune == MiddleRune
+                  currentRune == RightRune
+                ) {
+                  /*side effect*/
+                  newCurrentRune =
+                    //MiddleRune
+                    RightRune
+
+                  /*newLeftIndex = leftIndex//newLetterIndex
+                  newMiddleIndex = middleIndex//newMiddleIndex
+                  newRightIndex = newLetterIndex//newRightIndex*/
+                  /*same*/
+                  /*difference =
+                    scala.math.abs(newLetterIndex - runeState.middleState.index)*/
+                  /*same*/
+                  //stateIndex = runeState.middleState.index
+                } else {
+                  /*same*/
+                }
+              }
+
+              /*at this moment 'newCurrentRune' is 'MiddleRune' or 'RightRune'*/
+              /*only 'LeftRune' left*/
+              if (
+              //difference > scala.math.abs(newLetterIndex - runeState.rightState.index)
+                difference > (scala.math.abs(newLetterIndex - newLeftIndex) + 1) ||
+                difference > (alphabetLength - newLetterIndex + newLeftIndex + 1)
+              ) {
+                /*'Left' with '<' clother then 'Middle' ? or with '<<' then 'Right'? */
+                /*useless reassign*/
+                difference =
+                  //scala.math.abs(newLetterIndex - runeState.rightState.index)
+                  scala.math.abs(newLetterIndex - newLeftIndex)
+                stateIndex =
+                  //runeState.rightState.index
+                  newLeftIndex
+
+                newCurrentRune =
+                  LeftRune
+              } else if (
+              //difference == scala.math.abs(newLetterIndex - runeState.rightState.index)
+                difference == scala.math.abs(newLetterIndex - newLeftIndex)
+              ) {
+                /*at this moment 'newCurrentRune' may be 'MiddleRune' or 'RightRune'*/
+                if (
+                //(newCurrentRune == LeftRune ||
+                  (newCurrentRune == RightRune ||
+                   newCurrentRune == MiddleRune) &&
+                  newCurrentRune == currentRune
+                //newCurrentRune == runeState.currentRune
+                ) {
+                  /*same*/
+                } else if (
+                //newCurrentRune == RightRune
+                  currentRune == LeftRune
+                ) {
+                  /*side effect*/
+                  newCurrentRune =
+                    //RightRune
+                    LeftRune
+                  /*useless reassign*/
+                  /*difference =
+                    scala.math.abs(newLetterIndex - runeState.rightState.index)*/
+                  /*stateIndex = runeState.rightState.index*/
+
+                  /*newLeftIndex = newLetterIndex
+                  newMiddleIndex = middleIndex//newMiddleIndex
+                  newRightIndex = rightIndex//newRightIndex*/
+                } else {
+                  /*same*/
+                }
+              }
+
+              /*side effect*/
+              if (
+              //newCurrentRune == runeState.currentRune
+                newCurrentRune == currentRune
+              ) {
+                /*same place / rune*/
+                controlPrefix = ""
+              } else {
+                if (
+                  (newCurrentRune == MiddleRune &&
+                   /*runeState.*/ currentRune == LeftRune) ||
+                  (newCurrentRune == RightRune &&
+                   /*runeState.*/ currentRune == MiddleRune)
+                ) {
+                  /*go to right*/
+                  controlPrefix = ">"
+                } else if (
+                  (newCurrentRune == MiddleRune &&
+                   /*runeState.*/ currentRune == RightRune) ||
+                  (newCurrentRune == LeftRune &&
+                   /*runeState.*/ currentRune == MiddleRune)
+                ) {
+                  /*go to left*/
+                  controlPrefix = "<"
+                } else if (
+                  newCurrentRune == LeftRune &&
+                  /*runeState.*/ currentRune == RightRune
+                ) {
+                  /*go to left*/
+                  controlPrefix = "<<"
+                } else /*if (
+                  newCurrentRune == RightRune &&
+                  runeState.currentRune == LeftRune
+                )*/ {
+                  /*go to right*/
+                  controlPrefix = ">>"
+                }
+              }
+              /*side effect*/
+              /*set method parameters*/
+              newCurrentRune match {
+                case LeftRune => {
+                  newLeftIndex = newLetterIndex
+                  newMiddleIndex = middleIndex
+                  newRightIndex = rightIndex
+                }
+                case MiddleRune => {
+                  newLeftIndex = leftIndex
+                  newMiddleIndex = newLetterIndex
+                  newRightIndex = rightIndex
+                }
+                case RightRune => {
+                  newLeftIndex = leftIndex
+                  newMiddleIndex = middleIndex
+                  newRightIndex = newLetterIndex
+                }
+              }
+
+              /*return*/
+              //difference
+              stateIndex
+            }
+
+            /*val closestToNewLetterRune: Rune =
+              if (
+                newLetterIndex == runeState.leftState.index &&
+                newCurrentRune == LeftRune
+              ) {
+                /*same letter at the same position / rune*/
+                /*only '.' needed*/
+                LeftRune
+              } else if (
+                newLetterIndex == runeState.middleState.index &&
+                newCurrentRune == MiddleRune
+              ) {
+                /*same letter at the same position / rune*/
+                /*only '.' needed*/
+                MiddleRune
+              } else if (
+                newLetterIndex == runeState.rightState.index &&
+                newCurrentRune == MiddleRune
+              ) {
+                /*same letter at the same position / rune*/
+                /*only '.' needed*/
+                RightRune
+              } else {
+                newCurrentRune
+              }*/
+
+            /*val closestIndex: Int = closestToNewLetterRune match {
+              case LeftRune => runeState.leftState.index
+              case MiddleRune => runeState.middleState.index
+              case RightRune => runeState.rightState.index
+            }*/
+            /*actual action, useful result here*/
+            //val controlPrefix: String =
+            /*if (closestToNewLetterRune == newCurrentRune) {
+              ""
+            }else*/
+            /*if (closestToNewLetterRune == MiddleRune && newCurrentRune == LeftRune) {
+                         /*side effect*/
+                         newCurrentRune == MiddleRune
+                         /*return value*/
+                         ">"
+                       } else if (closestToNewLetterRune == MiddleRune && newCurrentRune == RightRune) {
+                         /*side effect*/
+                         newCurrentRune == MiddleRune
+                         /*return value*/
+                         "<"
+                       } else if (closestToNewLetterRune == LeftRune && newCurrentRune == MiddleRune) {
+                         /*side effect*/
+                         newCurrentRune == LeftRune
+                         /*return value*/
+                         "<"
+                       } else if (closestToNewLetterRune == RightRune && newCurrentRune == MiddleRune) {
+                         /*side effect*/
+                         newCurrentRune == RightRune
+                         /*return value*/
+                         ">"
+                       } else if (closestToNewLetterRune == LeftRune && newCurrentRune == RightRune) {
+                         /*side effect*/
+                         newCurrentRune == LeftRune
+                         /*return value*/
+                         "<<"
+                       } else if (closestToNewLetterRune == RightRune && newCurrentRune == LeftRune) {
+                         /*side effect*/
+                         newCurrentRune == RightRune
+                         /*return value*/
+                         ">>"
+                       } else {
+                         ""
+                       }*/
+
+            if (newLetterIndex > closestIndex /*previousLetterIndex*/ ) {
               /*'T' char:20 > 'E' char:5*/
               /*'Z' char:26 > 'A' char:1*/
-              if ((newLetterIndex - previousLetterIndex) > alphabetLength / 2) {
+              if ((newLetterIndex - closestIndex /*previousLetterIndex*/) > alphabetLength / 2) {
                 /*20 - 5 = 15 > 13 forward*/
                 /*5 + 27 - 20 = 13 backward*/
                 /*26 - 1 = 25 > 13 forward*/
                 /*27 - 26 + 1 = 2 backward*/
                 /*move backward*/
                 /*and through the 'space'*/
-                ("-" * (alphabetLength - newLetterIndex + previousLetterIndex)) + "."
+                controlPrefix + ("-" * (alphabetLength - newLetterIndex + closestIndex /*previousLetterIndex*/)) + "."
                 /*if (newLetterIndex > alphabetLength / 2) {
                   ("-" * (alphabetLength - previousLetterIndex + newLetterIndex )) + "."
                 } else {
@@ -316,35 +691,90 @@ object Player extends App {
                 }*/
               } else {
                 /*move forward*/
-                ("+" * ((newLetterIndex - previousLetterIndex))) + "."
+                controlPrefix + ("+" * (newLetterIndex - closestIndex /*previousLetterIndex*/)) + "."
               }
             } else /*if (newLetterIndex < previousLetterIndex)*/ {
               /*'I' char:9 < 'M' char:13*/
-              if ((previousLetterIndex - newLetterIndex) > alphabetLength / 2) {
+              if ((closestIndex /*previousLetterIndex*/ - newLetterIndex) > alphabetLength / 2) {
                 /*move forward*/
-                ("+" * (alphabetLength - (previousLetterIndex - newLetterIndex))) + "."
+                controlPrefix + (
+                                "+" * (alphabetLength - (closestIndex /*previousLetterIndex*/ - newLetterIndex))
+                                ) + "."
               } else {
                 /*13-9=5<13*/
                 /*move backward*/
-                ("-" * ((previousLetterIndex - newLetterIndex))) + "."
+                controlPrefix + ("-" * (closestIndex /*previousLetterIndex*/ - newLetterIndex)) + "."
               }
             }
           }
         } else {
+          /*what the case ?*/
+          /*one of the runes already has exact same letter*/
+          /*Which one it is?*/
           /*same letter*/
-          "."
+          //controlPrefix + "."
+          /*must work if pick first matched & ignore the rest*/
+          /*do not forget set 'newCurrentRune'*/
+          if (currentRune == MiddleRune && middleIndex == newLetterIndex) {
+            //newCurrentRune=MiddleRune
+
+            "."
+          }else if (currentRune == RightRune && rightIndex == newLetterIndex) {
+            /*same*/
+            "."
+          }else if (currentRune == LeftRune && leftIndex == newLetterIndex) {
+            /*same*/
+            "."
+          }else if (currentRune == MiddleRune && leftIndex == newLetterIndex) {
+            newCurrentRune=LeftRune
+            "<."
+          }else if (currentRune == MiddleRune && rightIndex == newLetterIndex) {
+            newCurrentRune=RightRune
+            ">."
+          }else if (currentRune == RightRune && middleIndex == newLetterIndex) {
+            newCurrentRune=MiddleRune
+            "<."
+          }else if (currentRune == LeftRune && middleIndex == newLetterIndex) {
+            newCurrentRune=MiddleRune
+            ">."
+          }else if (currentRune == LeftRune && rightIndex == newLetterIndex) {
+            newCurrentRune=RightRune
+            ">>."
+          }else /*if (currentRune == RightRune && leftIndex == newLetterIndex)*/ {
+            newCurrentRune=LeftRune
+            "<<."
+          }
         }
       /*recursion*/
       spellOutPhrase(
                       /*make it converge*/
                       phrase = phrase.tail,
                       spell = spell + newLetter,
-                      previousLetter =
+                      /*previousLetter =
                         if (spaceUsed) {
                           previousLetter
                         } else {
                           phrase.head
-                        },
+                        },*/
+                      /*runeState =
+                        RuneState(
+                                   currentRune =
+                                     newCurrentRune
+                                   /*if (spaceUsed) {
+                                     newCurrentRune
+                                   } else {
+                                     runeState.currentRune
+                                   }*/
+                                   ,
+                                   leftState = runeState.leftState,
+                                   middleState = MiddleLetter(index = previousLetterIndex),
+                                   rightState = runeState.rightState
+                                 )
+                      ,*/
+                      currentRune = newCurrentRune,
+                      leftIndex = newLeftIndex,
+                      middleIndex = newMiddleIndex,
+                      rightIndex = newRightIndex,
                       //isSpaceUsed = spaceUsed,
                       alphabet
                     )
@@ -374,6 +804,9 @@ object Player extends App {
   println(s"magicAlphabet find 'Q' char:${ magicAlphabet.indexOf('Q') }")
   println(s"magicAlphabet find 'E' char:${ magicAlphabet.indexOf('E') }")
   println(s"magicAlphabet find 'T' char:${ magicAlphabet.indexOf('T') }")
+  println(s"magicAlphabet find 'S' char:${ magicAlphabet.indexOf('S') }")
+  println(s"magicAlphabet find 'H' char:${ magicAlphabet.indexOf('H') }")
+  println(s"magicAlphabet find 'N' char:${ magicAlphabet.indexOf('N') }")
 
   println(s"magicAlphabet find 'A' string:${ magicAlphabet.indexOf("A") }")
   println(s"magicAlphabet find 'A' string:${ magicAlphabet.indexOf("A".head) }")
@@ -419,15 +852,50 @@ object Player extends App {
   Tip: use loops or move in forest zones
    */
   /*The magic phrase is: UMNE TALMAR RAHTAINE NIXENEN UMIR*/
+  /*
+  Far away letters
+  The magic phrase is:
+  G7U21 21-7=14 27-21=6
+  GUZ MUG ZOG GUMMOG ZUMGUM ZUM MOZMOZ MOG ZOGMOG GUZMUGGUM
+  fail on 'Z M'
+  & 'GU' not optimal
+   */
+  /*
+  TODO
+  The magic phrase is:
+  O OROFARNE LASSEMISTA CARNIMIRIE O ROWAN FAIR UPON YOUR HAIR HOW WHITE THE BLOSSOM LAY
+  Failure:
+  Bilbo spelled:
+  O OROFARNE LASSEM
+                   Q AA ZXZVIUIZIE W ZWDXN BXIZ BXWV FOBE HXIE HBJ JHIGE GHE YLOFFOM LXL
+   */
+  val spell: String =
+  //"A"
+  //"Z"
+  //"AZ"
+  //"S"
+  //"AS"
+    //"UMNE TALMAR R"
+  //" E"
+  //" T"
+  //"GU"
+  "Q A"
+  //"GUZ M"
+  //  "NA"
+    //"MINAS"
+  //"E T"
+  //"Magic Unicorn".toUpperCase
   println(
-           s"spellOutPhrase 'Magic Unicorn':${
+           s"spellOutPhrase $spell:${
              spellOutPhrase(
-                             phrase =
-                               "E T"
-                             //"Magic Unicorn".toUpperCase
+                             phrase = spell
                              ,
                              spell = "",
-                             previousLetter = ' ',
+                             //previousLetter = 'R',
+                             currentRune = LeftRune,
+                             leftIndex = 0,//M
+                             middleIndex = 0,//E
+                             rightIndex = 0,//A
                              alphabet = magicAlphabet
                            )
            }"

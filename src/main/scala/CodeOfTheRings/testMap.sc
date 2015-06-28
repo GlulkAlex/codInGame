@@ -6,5 +6,9 @@ someMap1 + ('B'->2)
 
 someMap1.get('A')
 
+"+++++++++++++".length
 "-------------".length
 "+++++++++++++".length
+"-------------".length
+1.max(2).max(3)
+14.min(5).min(0)
