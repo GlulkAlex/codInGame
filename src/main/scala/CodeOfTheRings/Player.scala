@@ -206,6 +206,31 @@ object Player extends App {
   val magicAlphabet: IndexedSeq[Char] /*Vector[Char]NumericRange.Inclusive[Char]*//*Range[Char]*/ =
   //('A' to 'Z') :+ (' ')
     (' ') +: ('A' to 'Z')
+
+  def SpellLettersFrequency(
+                             spell: String,
+                             lettersFrequencyMap: Map[Char, Int] = Map.empty[Char, Int]
+                             ): Map[Char, Int] =
+  {
+    if (spell.isEmpty) {
+      /*return value*/
+      lettersFrequencyMap
+    } else {
+      val letter: Char = spell.head
+      val frequency: Int =
+        if (lettersFrequencyMap.contains(letter)) {
+          lettersFrequencyMap.get(letter).get + 1
+        } else {
+          1
+        }
+      /*recursion*/
+      SpellLettersFrequency(
+                             spell = spell.tail,
+                             lettersFrequencyMap + (letter -> frequency)
+                           )
+    }
+  }
+
   //(' ') `space` is default / initial / starting `rune` value
   /*'A'*/
   var leftLetter: Char = ' '
@@ -220,11 +245,32 @@ object Player extends App {
   /*'-'*/
   var backwardFromPreviousToCurrent: Int = 0
 
+  /*
+  sequence for any letter must be less then magicAlphabet.length / 2 = 13 + 1
+  also
+  additional shortcuts / partitioning
+  >>special symbol 'space' max controls length '>>>>' = 4
+    if using 'space' from both sides then
+    max controls length '>>' = 2
+  >>letters (backward) from 'space' to 27 / 3 = 9 'S' included
+    max controls length (when set up) '<<<--------' = 11
+  >>letters (forward) from 'space' to 27 / 3 = 9 'H' included
+    max controls length (when set up) '>>>--------' = 11
+  */
+  trait RunePosition
+
+  case object Left
+
+  case object Middle
+
+  case object Right
+
   def spellOutPhrase(
                       phrase: String,
                       /*no commands*/
                       spell: String = "",
                       previousLetter: Char = ' ',
+                      //isSpaceUsed: Boolean = false,
                       alphabet: IndexedSeq[Char]
                       ): String =
   {
@@ -237,24 +283,52 @@ object Player extends App {
         alphabet.indexOf(previousLetter)
       val newLetterIndex =
         alphabet.indexOf(phrase.head)
+      var spaceUsed = false
+
+      val spaceSymbol = ">.<"
       val newLetter: String =
-        if (newLetterIndex > previousLetterIndex) {
-          if ((newLetterIndex - previousLetterIndex) > alphabetLength / 2) {
-            /*move backward*/
-            ("-" * (alphabetLength - (newLetterIndex - previousLetterIndex))) + "."
+        if (newLetterIndex != previousLetterIndex) {
+          if (
+            newLetterIndex == 0 &&
+            (previousLetterIndex>2 || (alphabetLength - previousLetterIndex)>2)
+          ) {
+            /*'space'*/
+            /*side effect*/
+            spaceUsed = true
+            /*return*/
+              spaceSymbol
           } else {
-            /*move forward*/
-            ("+" * ( (newLetterIndex - previousLetterIndex))) + "."
-          }
-        } else if (newLetterIndex < previousLetterIndex) {
-          /*'I' char:9 < 'M' char:13*/
-          if ((previousLetterIndex - newLetterIndex) > alphabetLength / 2) {
-            /*13-9=5<13*/
-            /*move backward*/
-            ("-" * ((previousLetterIndex - newLetterIndex))) + "."
-          } else {
-            /*move forward*/
-            ("+" * (alphabetLength - (previousLetterIndex - newLetterIndex))) + "."
+            if (newLetterIndex > previousLetterIndex) {
+              /*'T' char:20 > 'E' char:5*/
+              /*'Z' char:26 > 'A' char:1*/
+              if ((newLetterIndex - previousLetterIndex) > alphabetLength / 2) {
+                /*20 - 5 = 15 > 13 forward*/
+                /*5 + 27 - 20 = 13 backward*/
+                /*26 - 1 = 25 > 13 forward*/
+                /*27 - 26 + 1 = 2 backward*/
+                /*move backward*/
+                /*and through the 'space'*/
+                ("-" * (alphabetLength - newLetterIndex + previousLetterIndex)) + "."
+                /*if (newLetterIndex > alphabetLength / 2) {
+                  ("-" * (alphabetLength - previousLetterIndex + newLetterIndex )) + "."
+                } else {
+                  ("-" * (alphabetLength - newLetterIndex + previousLetterIndex)) + "."
+                }*/
+              } else {
+                /*move forward*/
+                ("+" * ((newLetterIndex - previousLetterIndex))) + "."
+              }
+            } else /*if (newLetterIndex < previousLetterIndex)*/ {
+              /*'I' char:9 < 'M' char:13*/
+              if ((previousLetterIndex - newLetterIndex) > alphabetLength / 2) {
+                /*move forward*/
+                ("+" * (alphabetLength - (previousLetterIndex - newLetterIndex))) + "."
+              } else {
+                /*13-9=5<13*/
+                /*move backward*/
+                ("-" * ((previousLetterIndex - newLetterIndex))) + "."
+              }
+            }
           }
         } else {
           /*same letter*/
@@ -265,7 +339,13 @@ object Player extends App {
                       /*make it converge*/
                       phrase = phrase.tail,
                       spell = spell + newLetter,
-                      previousLetter = phrase.head,
+                      previousLetter =
+                        if (spaceUsed) {
+                          previousLetter
+                        } else {
+                          phrase.head
+                        },
+                      //isSpaceUsed = spaceUsed,
                       alphabet
                     )
     }
@@ -292,22 +372,44 @@ object Player extends App {
   println(s"magicAlphabet find 'M' char:${ magicAlphabet.indexOf('M') }")
   println(s"magicAlphabet find 'I' char:${ magicAlphabet.indexOf('I') }")
   println(s"magicAlphabet find 'Q' char:${ magicAlphabet.indexOf('Q') }")
+  println(s"magicAlphabet find 'E' char:${ magicAlphabet.indexOf('E') }")
+  println(s"magicAlphabet find 'T' char:${ magicAlphabet.indexOf('T') }")
 
   println(s"magicAlphabet find 'A' string:${ magicAlphabet.indexOf("A") }")
   println(s"magicAlphabet find 'A' string:${ magicAlphabet.indexOf("A".head) }")
   println(s"magicAlphabet find 'Z' string:${ magicAlphabet.indexOf("Z".head) }")
   println(s"magicAlphabet.length:${ magicAlphabet.length }")
+  println(s"'+++++++++++++++++++++++'.length:${ "+++++++++++++++++++++++".length }")
+  println(s"(27/2):${ (27 / 2) }")
   println(s"'+'*(27/2):${ '+' * (27 / 2) }")
   println(s"'+'*(27/2):${ "+" * (27 / 2) }")
+  println(
+           s"SpellLettersFrequency 'MINAS':${
+             SpellLettersFrequency(
+                                    spell = "MINAS",
+                                    lettersFrequencyMap = Map.empty[Char, Int]
+                                  )
+           }"
+         )
+  println(
+           s"SpellLettersFrequency 'THREE':${
+             SpellLettersFrequency(
+                                    spell = "THREE",
+                                    lettersFrequencyMap = Map.empty[Char, Int]
+                                  )
+           }"
+         )
 
   /*
   The magic phrase is: MINAS
-  +++++++++++++.-----------------------.+++++.--------------.---------.
+  +++++++++++++.-----------------------.+++++.--------------.---------.(wrong)
+  +++++++++++++.+++++++++++++++++++++++.+++++.++++++++++++++.---------.(right)
   Failure: Bilbo spelled: MQVHZ
    */
   /*
   TODO
   Long Spell (last 24 test)
+  my best result: 2599
   The magic phrase is:
   THREE RINGS FOR THE ELVEN KINGS UNDER THE SKY SEVEN FOR THE DWARF LORDS IN THEIR HALLS OF STONE NINE FOR MORTAL MEN DOOMED TO DIE ONE FOR THE DARK LORD ON HIS DARK THRONEIN THE LAND OF MORDOR WHERE THE SHADOWS LIE ONE RING TO RULE THEM ALL ONE RING TO FIND THEM ONE RING TO BRING THEM ALL AND IN THE DARKNESS BIND THEM IN THE LAND OF MORDOR WHERE THE SHADOWS LIE
   Failure: Bilbo has too many actions to perform (infinite loop?).
@@ -316,16 +418,19 @@ object Player extends App {
   (ended with ...SHADOWS LIE ONE RING TO RULE THEM ALL ONE RING TO FIND THEM ONE RING)
   Tip: use loops or move in forest zones
    */
-  println(s"spellOutPhrase 'Magic Unicorn':${
-  spellOutPhrase(
-                  phrase =
-                    "A"
-                    //"Magic Unicorn".toUpperCase
-                  ,
-                  spell = "",
-                  previousLetter = ' ',
-                  alphabet = magicAlphabet
-                )
-  }")
+  /*The magic phrase is: UMNE TALMAR RAHTAINE NIXENEN UMIR*/
+  println(
+           s"spellOutPhrase 'Magic Unicorn':${
+             spellOutPhrase(
+                             phrase =
+                               "E T"
+                             //"Magic Unicorn".toUpperCase
+                             ,
+                             spell = "",
+                             previousLetter = ' ',
+                             alphabet = magicAlphabet
+                           )
+           }"
+         )
 
 }
