@@ -45,6 +45,7 @@ object RuneForest /*extends App*/ {
 
   val magicAlphabet: IndexedSeq[Char] =
     ' ' +: ('A' to 'Z')
+  /*actually length must be equal to '30' due to specifications, but 27 is pretty close*/
   val runeForestArray: Array[Byte] = new Array[Byte](magicAlphabet.length)
   /*'runeForestArray' index pointer*/
   var activeZone: Byte = 0

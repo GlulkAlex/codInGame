@@ -260,11 +260,167 @@ object Player /*extends App*/ {
   /*
   new strategy:
   -3      -2      -1        0       1       2      3
+     0       1       2      3       4       5      6
   [space][Letter][Letter][space][Letter][Letter][space]
   max `space` length = "<.>" or ">.<" = +3
   max switch to closest letter index = ">>>>" or "<<<<" = +4
   if `spell` consist only one `letter` use 'space0'
    */
+  /*content must change effected by encoding to mirror forest state*/
+  val runeFrame: Array[Byte] =
+  //new Array[Byte](7)
+    Array().padTo(len = 7, elem = 0.toByte)
+  /*'runeFrame' index pointer*/
+  var activeRune: Byte =
+    //0 for forest
+    3 //for 'runeFrame' center
+  //val symbolsFrequencyMap =
+
+  def getPlusPath(oldIndex: Byte, newIndex: Byte): Byte =
+    if (oldIndex > newIndex) {
+      (27 - oldIndex + newIndex)
+        .toByte
+    } else if (oldIndex < newIndex) {
+      (newIndex - oldIndex)
+        .toByte
+    } else {
+      0
+    }
+
+  def getMinusPath(oldIndex: Byte, newIndex: Byte): Byte =
+    if (oldIndex > newIndex) {
+      (oldIndex - newIndex)
+        .toByte
+    } else if (oldIndex < newIndex) {
+      (oldIndex + 27 - newIndex)
+        .toByte
+    } else {
+      0
+    }
+
+  /*careful with [Byte] because value may be out of Range from '-128 to 127'*/
+  def encodeSymbol(
+                    spellLetter: Char,
+                    symbolsFrequencyMap: Map[Char, Int] = Map.empty[Char, Int]
+                    ): /*Char*/ String =
+  {
+    var newControl: String = ""
+    val currentActiveRuneSymbolIndex: Byte = runeFrame(activeRune)
+    val alphabetLength: Byte =
+      27
+    val thresholdLength: Byte =
+      (27 / 2).toByte
+    //magicAlphabet.length
+    val newLetterIndex: Byte =
+      magicAlphabet
+        .indexOf(spellLetter)
+        .toByte
+    var distanceDifference: Byte =
+      scala.math
+        .abs(newLetterIndex - currentActiveRuneSymbolIndex)
+        .toByte
+    var distanceMod: Byte =
+      ((newLetterIndex - currentActiveRuneSymbolIndex) % alphabetLength)
+        .toByte
+    var plusPath: Byte =
+      if (currentActiveRuneSymbolIndex > newLetterIndex) {
+        (alphabetLength - currentActiveRuneSymbolIndex + newLetterIndex)
+          .toByte
+      } else if (currentActiveRuneSymbolIndex < newLetterIndex) {
+        (newLetterIndex - currentActiveRuneSymbolIndex)
+          .toByte
+      } else {
+        0
+      }
+    var minusPath: Byte =
+      if (currentActiveRuneSymbolIndex > newLetterIndex) {
+        (currentActiveRuneSymbolIndex - newLetterIndex)
+          .toByte
+      } else if (currentActiveRuneSymbolIndex < newLetterIndex) {
+        (currentActiveRuneSymbolIndex + alphabetLength - newLetterIndex)
+          .toByte
+      } else {
+        0
+      }
+
+    if (symbolsFrequencyMap.size == 1) {
+      /*one symbol only, using initial 'activeRune' & no else*/
+      /*side effect*/
+      runeFrame(activeRune) = newLetterIndex
+
+      if (currentActiveRuneSymbolIndex == newLetterIndex) {
+        /*default 'space'*/
+        /*return value*/
+        "."
+      } else {
+        /*not a 'space', not same letter*/
+        if (
+          plusPath > minusPath
+        ) {
+          "-" * minusPath + "."
+        } else if (
+               plusPath < minusPath
+               ){
+          "+" * plusPath + "."
+        } else {
+          "."
+        }
+      }
+    } else {
+      /*if (
+        newLetterIndex == 0 &&
+        /*'3' max for 'MiddleRune'*/
+        (leftIndex.min(middleIndex).min(rightIndex) > 3 ||
+         (alphabetLength - leftIndex.min(middleIndex).min(rightIndex)) > 3)
+      ) {*/
+      /*if (
+        difference > (scala.math.abs(newLetterIndex - newRightIndex) + 1) ||
+        difference > (alphabetLength - newLetterIndex + newRightIndex + 1)
+      ) {*/
+      /*'Right' with '>' clother then 'Middle'*/
+      /*if ((newLetterIndex - closestIndex /*previousLetterIndex*/) > alphabetLength / 2) {
+        /*20 - 5 = 15 > 13 forward*/
+        /*5 + 27 - 20 = 13 backward*/
+        /*26 - 1 = 25 > 13 forward*/
+        /*27 - 26 + 1 = 2 backward*/
+        /*move backward*/
+        /*and through the 'space'*/
+        controlPrefix + ("-" * (alphabetLength - newLetterIndex + closestIndex /*previousLetterIndex*/)) + "."
+      } else {
+        /*move forward*/
+        controlPrefix + ("+" * (newLetterIndex - closestIndex /*previousLetterIndex*/)) + "."
+      } */
+
+      /*return value*/
+      ""
+    }
+  }
+
+  def encodePhrase(
+                    magicPhrase: String,
+                    controls: String = "",
+                    symbolsFrequencyMap: Map[Char, Int] = Map.empty[Char, Int]
+                    ): String =
+  {
+    if (magicPhrase.isEmpty) {
+      /*return value*/
+      controls
+    } else {
+      /*recursion*/
+      encodePhrase(
+                    /*it must converge*/
+                    magicPhrase = magicPhrase.tail,
+                    controls =
+                      controls +
+                      encodeSymbol(
+                                    magicPhrase.head,
+                                    symbolsFrequencyMap
+                                  ),
+                    /*same, not changing, just for reference*/
+                    symbolsFrequencyMap = symbolsFrequencyMap
+                  )
+    }
+  }
 
   trait Rune
 
@@ -592,6 +748,7 @@ object Player /*extends App*/ {
 }
 
 object Main extends App {
+
   import Player._
 
   val magicphrase: String =
@@ -643,6 +800,8 @@ object Main extends App {
                                   )
            }"
          )
+  println(s"activeRune:${ activeRune }")
+  println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
 
   /*
   The magic phrase is: MINAS
@@ -685,31 +844,76 @@ object Main extends App {
   //"AZ"
   //"S"
   //"AS"
-    //"UMNE TALMAR R"
+  //"UMNE TALMAR R"
   //" E"
   //" T"
   //"GU"
   //"Q A"//spellOutPhrase Q17 A:++++.<.>>>. 13-17=-4
-  "ISTA"//spellOutPhrase I9STA:++++.++++++++++.+.>>. 13-9=4
+  //  "ISTA" //spellOutPhrase I9STA:++++.++++++++++.+.>>. 13-9=4
   //"GUZ M"
   //  "NA"
-    //"MINAS"
+  "MINAS"
   //"E T"
   //"Magic Unicorn".toUpperCase
   println(
            s"spellOutPhrase $spell:${
              spellOutPhrase(
-                             phrase = spell
-                             ,
-                             spell = "",
-                             //previousLetter = 'R',
-                             currentRune = LeftRune,
-                             leftIndex = 13,//M
-                             middleIndex = 5,//E
-                             rightIndex = 1,//A
+                             phrase =
+                               spell,
+                             //spell = "",
+                             //currentRune = LeftRune,
+                             //leftIndex = 13, //M
+                             //middleIndex = 5, //E
+                             //rightIndex = 1, //A
                              alphabet = magicAlphabet
                            )
            }"
          )
+  println(
+           s"encodePhrase $spell:${
+             encodePhrase(
+                           magicPhrase =
+                             spell,
+                           symbolsFrequencyMap = Map('A'-> 1)
+                         )
+           }"
+         )
+  println(
+           s"encodeSymbol 'A':${
+             encodeSymbol(
+                           spellLetter =
+                             'A',
+                           symbolsFrequencyMap = Map('A'-> 1)
+                         )
+           }"
+         )
+  println(
+           s"encodeSymbol 'M':${
+             encodeSymbol(
+                           spellLetter =
+                             'M',
+                           symbolsFrequencyMap = Map('A'-> 1)
+                         )
+           }"
+         )
+  println(
+           s"encodeSymbol 'Z':${
+             encodeSymbol(
+                           spellLetter =
+                             'Z',
+                           symbolsFrequencyMap = Map('A'-> 1)
+                         )
+           }"
+         )
+  println(
+           s"encodePhrase $spell:${
+             encodePhrase(
+                           magicPhrase =
+                             spell,
+                           symbolsFrequencyMap = Map('A'-> 1)
+                         )
+           }"
+         )
 
+  val testBeacon: Boolean = true
 }

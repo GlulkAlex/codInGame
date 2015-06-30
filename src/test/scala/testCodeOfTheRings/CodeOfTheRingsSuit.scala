@@ -15,7 +15,7 @@ class CodeOfTheRingsSuit extends FunSuite {
 
   //ignore
   test(
-        "1: spelling must match the spell"
+        "1: spelling with 'spellOutPhrase' must match the spell"
       ) {
           val spell: String =
             "MINAS"
@@ -38,4 +38,23 @@ class CodeOfTheRingsSuit extends FunSuite {
                   "must be = 'MINAS'"
                 )
         }
+  //ignore
+  test(
+        "2: spelling with 'encodePhrase' must match the spell"
+      ) {
+          val spell: String =
+            "MINAS"
+          //assert(Set.empty.size == 0)
+          assume(
+                  spellPhrase(
+                               encodePhrase(
+                                             magicPhrase =
+                                               spell,
+                                             symbolsFrequencyMap = Map('A'-> 1)
+                                           )
+                             ) === "MINAS",
+                  "must be = 'MINAS'"
+                )
+        }
+
 }
