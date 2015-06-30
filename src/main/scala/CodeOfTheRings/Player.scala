@@ -256,6 +256,8 @@ object Player /*extends App*/ {
     max controls length (when set up) '<<<--------' = 11
   >>letters (forward) from 'space' to 27 / 3 = 9 'H' included
     max controls length (when set up) '>>>--------' = 11
+  >>? if sequence of one letter has length greater then '6' then
+     may be implement loop controls '[<.>-]' ?
   */
   /*
   new strategy:
@@ -272,7 +274,7 @@ object Player /*extends App*/ {
     Array().padTo(len = 7, elem = 0.toByte)
   /*'runeFrame' index pointer*/
   var activeRune: Byte =
-    //0 for forest
+  //0 for forest
     3 //for 'runeFrame' center
   //val symbolsFrequencyMap =
 
@@ -298,7 +300,52 @@ object Player /*extends App*/ {
       0
     }
 
+  def getPrefix(
+                 closestIndex: Byte,
+                 currentActiveRuneSymbolIndex: Byte
+                 ): String =
+  {
+    if (closestIndex == 1 && currentActiveRuneSymbolIndex == 2) {
+      /*return value*/
+      ">"
+    } else if (closestIndex == 2 && currentActiveRuneSymbolIndex == 1) {
+      /*return value*/
+      "<"
+    } else if (closestIndex == 1 && currentActiveRuneSymbolIndex == 4) {
+      /*return value*/
+      ">>>"
+    } else if (closestIndex == 4 && currentActiveRuneSymbolIndex == 1) {
+      /*return value*/
+      "<<<"
+    } else if (closestIndex == 4 && currentActiveRuneSymbolIndex == 2) {
+      /*return value*/
+      "<<"
+    } else if (closestIndex == 2 && currentActiveRuneSymbolIndex == 4) {
+      /*return value*/
+      ">>"
+    } else if (closestIndex == 2 && currentActiveRuneSymbolIndex == 5) {
+      /*return value*/
+      ">>>"
+    } else if (closestIndex == 5 && currentActiveRuneSymbolIndex == 2) {
+      /*return value*/
+      "<<<"
+    } else if (closestIndex == 5 && currentActiveRuneSymbolIndex == 1) {
+      /*return value*/
+      "<<<<"
+    } else if (closestIndex == 1 && currentActiveRuneSymbolIndex == 5) {
+      /*return value*/
+      ">>>>"
+    } else if (closestIndex == 4 && currentActiveRuneSymbolIndex == 5) {
+      /*return value*/
+      ">"
+    } else /*if (closestIndex == 5 && currentActiveRuneSymbolIndex == 4)*/ {
+      /*return value*/
+      "<"
+    }
+  }
+
   /*careful with [Byte] because value may be out of Range from '-128 to 127'*/
+  /*test shows that up to 14 + '.' length encoding possible for one letter spell*/
   def encodeSymbol(
                     spellLetter: Char,
                     symbolsFrequencyMap: Map[Char, Int] = Map.empty[Char, Int]
@@ -359,40 +406,121 @@ object Player /*extends App*/ {
         ) {
           "-" * minusPath + "."
         } else if (
-               plusPath < minusPath
-               ){
+          plusPath < minusPath
+        ) {
           "+" * plusPath + "."
         } else {
           "."
         }
       }
     } else {
-      /*if (
+      /*
+      TODO
+      check & fix it
+      because pick not optimal up to '26' length path
+       */
+      val (closestIndex, closestMinusPath, closestPlusPath, _, _): (Byte, Byte, Byte, Byte, Byte) =
+        (
+        for (i <- Set(1, 2, 4, 5)) yield (
+          i.toByte,
+          getMinusPath(runeFrame(i), newLetterIndex),
+          getPlusPath(runeFrame(i), newLetterIndex),
+          getMinusPath(runeFrame(i), newLetterIndex)
+            .min(getPlusPath(runeFrame(i), newLetterIndex)),
+          scala.math.abs(activeRune - i).toByte
+          )
+        )
+          /*if shortest distance is same for at least two index then pick closest to `activeRune`*/
+          .min(
+            //Ordering.by[(Byte, Byte, Byte, Byte), Byte](_._4)
+            // sort by the 4th element, then 5th
+            Ordering[(Byte, Byte)]
+            //Ordering[(Byte, Byte, Byte, Byte, Byte),(Byte, Byte)]
+            //Ordering[(_, _, Byte, Byte),(Byte, Byte)]
+              .on((x:(Byte, Byte, Byte, Byte, Byte)) => (x._4, x._5))
+              )
+
+      /*case for 'space' '<.>' or '>.<' length '3' max*/
+      if (
         newLetterIndex == 0 &&
-        /*'3' max for 'MiddleRune'*/
-        (leftIndex.min(middleIndex).min(rightIndex) > 3 ||
-         (alphabetLength - leftIndex.min(middleIndex).min(rightIndex)) > 3)
-      ) {*/
-      /*if (
-        difference > (scala.math.abs(newLetterIndex - newRightIndex) + 1) ||
-        difference > (alphabetLength - newLetterIndex + newRightIndex + 1)
-      ) {*/
-      /*'Right' with '>' clother then 'Middle'*/
-      /*if ((newLetterIndex - closestIndex /*previousLetterIndex*/) > alphabetLength / 2) {
-        /*20 - 5 = 15 > 13 forward*/
-        /*5 + 27 - 20 = 13 backward*/
-        /*26 - 1 = 25 > 13 forward*/
-        /*27 - 26 + 1 = 2 backward*/
-        /*move backward*/
-        /*and through the 'space'*/
-        controlPrefix + ("-" * (alphabetLength - newLetterIndex + closestIndex /*previousLetterIndex*/)) + "."
+        (closestMinusPath >= 3 ||
+         closestPlusPath >= 3)
+      ) {
+        /*'runeFrame' stays unchanged*/
+        if (closestIndex == 2 || closestIndex == 5) {
+          /*return value*/
+          ">.<"
+        } else /*if (closestIndex == 1 || closestIndex == 4)*/ {
+          /*return value*/
+          "<.>"
+        }
       } else {
-        /*move forward*/
-        controlPrefix + ("+" * (newLetterIndex - closestIndex /*previousLetterIndex*/)) + "."
-      } */
+        /*'runeFrame' must confirm / concord newly created 'controls'*/
+        if (
+          closestIndex == currentActiveRuneSymbolIndex &&
+          (closestMinusPath == 0 ||
+           closestPlusPath == 0)) {
+          /*same symbol*/
+          /*same 'runeFrame' symbol state*/
+          /*return value*/
+          "."
+        } else if (
+          closestIndex == currentActiveRuneSymbolIndex &&
+          (closestMinusPath != 0 &&
+           closestPlusPath != 0)) {
+          /*side effect*/
+          /*'runeFrame' state update*/
+          activeRune = closestIndex
+          runeFrame(activeRune) = newLetterIndex
+
+          /*changing in place*/
+          if (closestMinusPath > closestPlusPath) {
+            /*return value*/
+            "+" * plusPath + "."
+          } else {
+            /*return value*/
+            "-" * minusPath + "."
+          }
+        } else if (
+          closestIndex != currentActiveRuneSymbolIndex &&
+          (closestMinusPath == 0 ||
+           closestPlusPath == 0)) {
+          /*same symbol*/
+          /*[1][2]_[4][5]*/
+          /*.combinations(2)*/
+          /*List(1, 2)|List(1, 4)|List(1, 5)|List(2, 4)|List(2, 5)|List(4, 5)*/
+          /*side effect*/
+          /*'runeFrame' state update*/
+          activeRune = closestIndex
+          runeFrame(activeRune) = newLetterIndex
+
+          getPrefix(
+                     closestIndex: Byte,
+                     currentActiveRuneSymbolIndex: Byte
+                   ) + "."
+        } else /*if (
+          closestIndex != currentActiveRuneSymbolIndex &&
+          (closestMinusPath != 0 &&
+           closestPlusPath != 0))*/ {
+          /*side effect*/
+          /*'runeFrame' state update*/
+          activeRune = closestIndex
+          runeFrame(activeRune) = newLetterIndex
+
+          getPrefix(
+                     closestIndex: Byte,
+                     currentActiveRuneSymbolIndex: Byte
+                   ) +
+          (if (closestMinusPath > closestPlusPath) {
+            "+" * plusPath
+          } else {
+            "-" * minusPath
+          }) + "."
+        }
+      }
 
       /*return value*/
-      ""
+      //""
     }
   }
 
@@ -813,9 +941,18 @@ object Main extends App {
   Long Spell (last 24 test)
   my best result: (was 2599)
   >>is 1520<<
-  The magic phrase is:
-  THREE RINGS FOR THE ELVEN KINGS UNDER THE SKY SEVEN FOR THE DWARF LORDS IN THEIR HALLS OF STONE NINE FOR MORTAL MEN DOOMED TO DIE ONE FOR THE DARK LORD ON HIS DARK THRONEIN THE LAND OF MORDOR WHERE THE SHADOWS LIE ONE RING TO RULE THEM ALL ONE RING TO FIND THEM ONE RING TO BRING THEM ALL AND IN THE DARKNESS BIND THEM IN THE LAND OF MORDOR WHERE THE SHADOWS LIE
-  Failure: Bilbo has too many actions to perform (infinite loop?).
+  The magic phrase is:*/
+  val longSpell: String =
+    "THREE RINGS FOR THE ELVEN KINGS UNDER THE SKY " +
+    "SEVEN FOR THE DWARF LORDS IN THEIR HALLS OF STONE " +
+    "NINE FOR MORTAL MEN DOOMED TO DIE " +
+    "ONE FOR THE DARK LORD ON HIS DARK THRONEIN THE LAND OF MORDOR " +
+    "WHERE THE SHADOWS LIE " +
+    "ONE RING TO RULE THEM ALL " +
+    "ONE RING TO FIND THEM " +
+    "ONE RING TO BRING THEM ALL AND IN THE DARKNESS " +
+    "BIND THEM IN THE LAND OF MORDOR WHERE THE SHADOWS LIE"
+  /*Failure: Bilbo has too many actions to perform (infinite loop?).
   Bilbo performs more then
   4000 moves
   (ended with ...SHADOWS LIE ONE RING TO RULE THEM ALL ONE RING TO FIND THEM ONE RING)
@@ -852,7 +989,7 @@ object Main extends App {
   //  "ISTA" //spellOutPhrase I9STA:++++.++++++++++.+.>>. 13-9=4
   //"GUZ M"
   //  "NA"
-  "MINAS"
+    "MINAS"
   //"E T"
   //"Magic Unicorn".toUpperCase
   println(
@@ -874,7 +1011,7 @@ object Main extends App {
              encodePhrase(
                            magicPhrase =
                              spell,
-                           symbolsFrequencyMap = Map('A'-> 1)
+                           symbolsFrequencyMap = Map('A' -> 1)
                          )
            }"
          )
@@ -883,7 +1020,7 @@ object Main extends App {
              encodeSymbol(
                            spellLetter =
                              'A',
-                           symbolsFrequencyMap = Map('A'-> 1)
+                           symbolsFrequencyMap = Map('A' -> 1)
                          )
            }"
          )
@@ -892,7 +1029,7 @@ object Main extends App {
              encodeSymbol(
                            spellLetter =
                              'M',
-                           symbolsFrequencyMap = Map('A'-> 1)
+                           symbolsFrequencyMap = Map('A' -> 1)
                          )
            }"
          )
@@ -901,17 +1038,58 @@ object Main extends App {
              encodeSymbol(
                            spellLetter =
                              'Z',
-                           symbolsFrequencyMap = Map('A'-> 1)
+                           symbolsFrequencyMap = Map('A' -> 1)
                          )
            }"
          )
-  println(
+
+  val encodePhraseLongSpell1 =
+    encodePhrase(
+                  magicPhrase =
+                    longSpell,
+                  symbolsFrequencyMap = Map('A' -> 1)
+                )
+  val encodePhraseLongSpell2 =
+    encodePhrase(
+                  magicPhrase =
+                    longSpell,
+                  symbolsFrequencyMap =
+                    SpellLettersFrequency(longSpell)
+                )
+  val spellOutPhraseLongSpell =
+    spellOutPhrase(
+                    phrase =
+                      longSpell,
+                    alphabet = magicAlphabet
+                  )
+
+  /*println(
            s"encodePhrase $spell:${
              encodePhrase(
                            magicPhrase =
                              spell,
                            symbolsFrequencyMap = Map('A'-> 1)
                          )
+           }"
+         )*/
+  println(
+           s"longSpell :${
+             longSpell
+           }"
+         )
+  println(
+           s"spellOutPhraseLongSpell.length = ${ spellOutPhraseLongSpell.length }:${
+             spellOutPhraseLongSpell
+           }"
+         )
+  println(
+           s"encodePhraseLongSpell1.length 1st strategy= ${ encodePhraseLongSpell1.length }:${
+             encodePhraseLongSpell1
+           }"
+         )
+  println(
+           s"encodePhraseLongSpell2.length 3st strategy= ${ encodePhraseLongSpell2.length }:${
+             encodePhraseLongSpell2
            }"
          )
 

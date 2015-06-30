@@ -17,6 +17,16 @@ someMap2
   case None => Map.empty[Char,Int]
   case Some((key, value)) => (key, value)
 }
+/*1,2,4,5*/
+Range(1, 7, step= 2 )
+(1 to 5).filter((x)=>x !=3)
+Seq(1,2,4,5)
+  .combinations(2)
+  .toList
+  .mkString("|")
+"-----------------".length
+"++++++++++++++++++++++++++".length
+"------------------".length
 "+++++++++++++".length
 "-------------".length
 "+++++++++++++".length
