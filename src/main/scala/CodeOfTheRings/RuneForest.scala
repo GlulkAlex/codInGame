@@ -31,7 +31,7 @@ to the spelling phrase
 /**
  * Created by Alex on 29.06.15.
  */
-object RuneForest extends App {
+object RuneForest /*extends App*/ {
 
   /*
   `forest` has cycled zones '0' to '29' &
@@ -45,11 +45,36 @@ object RuneForest extends App {
 
   val magicAlphabet: IndexedSeq[Char] =
     ' ' +: ('A' to 'Z')
+  val runeForestArray: Array[Byte] = new Array[Byte](magicAlphabet.length)
+  /*'runeForestArray' index pointer*/
+  var activeZone: Byte = 0
   //val zone
   var runeForest: Map[Byte, RuneStone] /*or 'scala.collection.mutable.'*/ =
     (0 to 29)
       .map(i => i.toByte -> RuneStone(false, 0))
       .toMap
+
+  /*set new active `zone` / 'RuneStone'*/
+  def traverseZones(
+                     direction: Char
+                     ): Byte /*Array[Byte]*/ =
+  {
+    if (runeForestArray.isEmpty) {
+      /*return value*/
+      //runeForestArray
+      -1
+    } else {
+      /*side effect*/
+      activeZone =
+        if (direction == '>') {
+          ((activeZone + 1) % runeForestArray.length).toByte
+        } else /* if (direction == '<')*/ {
+          ((activeZone - 1 + runeForestArray.length) % runeForestArray.length).toByte
+        }
+      /*return value*/
+      activeZone
+    }
+  }
 
   /*set new active `zone` / 'RuneStone'*/
   def traverseForest(
@@ -98,6 +123,21 @@ object RuneForest extends App {
     }
   }
 
+  def setRuneLetter(
+                     direction: Char
+                     ): Byte =
+  {
+    if (magicAlphabet.isEmpty) {
+      -1
+    } else {
+      if (direction == '+') {
+        ((runeForestArray(activeZone) + 1) % magicAlphabet.length).toByte
+      } else /*if (direction == '-')*/ {
+        ((runeForestArray(activeZone) - 1 + magicAlphabet.length) % magicAlphabet.length).toByte
+      }
+    }
+  }
+
   def setLetter(
                  direction: Char,
                  letterIndex: Byte,
@@ -138,6 +178,51 @@ object RuneForest extends App {
         /*return value*/
         (-1, RuneStone(false, -1))
       case Some((key, RuneStone(_, letter))) => (key, RuneStone(true, letter))
+    }
+  }
+
+  def spellPhrase(
+                   controls: String,
+                   spell: String = ""
+                   ): String =
+  {
+    if (controls.isEmpty) {
+      spell
+    } else {
+      val newSpell: String =
+        if (controls.head == '.'
+        ) {
+          spell + magicAlphabet(runeForestArray(activeZone))
+        } else {
+          spell
+        }
+
+      if (
+        controls.head == '>' ||
+        controls.head == '<'
+      ) {
+        /*side effect*/
+        traverseZones(
+                       direction = controls.head
+                     )
+      } else if (
+        controls.head == '+' ||
+        controls.head == '-'
+      ) {
+        /*side effect*/
+        runeForestArray(activeZone) =
+        setRuneLetter(
+                       direction = controls.head
+                     )
+      } else {
+        /*loop cpntrols '[,]' ?*/
+      }
+
+      /*return value*/
+      spellPhrase(
+                   controls = controls.tail,
+                   spell = newSpell
+                 )
     }
   }
 
@@ -211,14 +296,21 @@ object RuneForest extends App {
   }
 
   /*initialization*/
+  runeForestArray
+    .map(_ => 0.toByte)
+
   runeForest =
     runeForest.updated(0, RuneStone(true, 0))
+}
 
+object Main extends App {
   /*unit test*/
+  import RuneForest._
+
   val controls: String =
-    //"+.-.+.-.+."
+    "+.-.+.-.+."
     //"+.>.<.<.>."
-    "+.>...<."
+    //"+.>...<."
   /*println(s"runeForest: ${ runeForest.filter(_._2.isActive).mkString("|") }")
   println(
            s"traverseForest: ${
@@ -234,11 +326,29 @@ object RuneForest extends App {
                .mkString("|")
            }"
          )*/
+  /*println(
+           s"activeZone : ${
+             activeZone
+           }"
+         )
+  println(
+           s"runeForestArray : ${
+             runeForestArray.mkString("[","|","]")
+           }"
+         )
+  println(
+  s"setRuneLetter('-') : ${
+    setRuneLetter('-')
+  }"
+         )
+  println(
+  s"setRuneLetter('+') : ${
+    setRuneLetter('+')
+  }"
+         )*/
   println(
            s"spellIt $controls: ${
-             spellIt(
-                      forest=runeForest,
-                      alphabet=magicAlphabet,
+             spellPhrase(
                       controls=controls,
                       spell = ""
              )
