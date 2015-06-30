@@ -303,7 +303,7 @@ object RuneForest /*extends App*/ {
     runeForest.updated(0, RuneStone(true, 0))
 }
 
-object Main extends App {
+object MainUnitTest extends App {
   /*unit test*/
   import RuneForest._
 

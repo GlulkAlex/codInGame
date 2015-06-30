@@ -200,7 +200,7 @@ Allotted response time to output is <= 2 seconds.
 /**
  * Created by Alex on 27.06.15.
  */
-object Player extends App {
+object Player /*extends App*/ {
   val rangeEnd: Int = 'Z'.getNumericValue
 
   val magicAlphabet: IndexedSeq[Char] /*Vector[Char]NumericRange.Inclusive[Char]*//*Range[Char]*/ =
@@ -550,29 +550,29 @@ object Player extends App {
           if (currentRune == MiddleRune && middleIndex == newLetterIndex) {
 
             "."
-          }else if (currentRune == RightRune && rightIndex == newLetterIndex) {
+          } else if (currentRune == RightRune && rightIndex == newLetterIndex) {
             /*same*/
             "."
-          }else if (currentRune == LeftRune && leftIndex == newLetterIndex) {
+          } else if (currentRune == LeftRune && leftIndex == newLetterIndex) {
             /*same*/
             "."
-          }else if (currentRune == MiddleRune && leftIndex == newLetterIndex) {
-            newCurrentRune=LeftRune
+          } else if (currentRune == MiddleRune && leftIndex == newLetterIndex) {
+            newCurrentRune = LeftRune
             "<."
-          }else if (currentRune == MiddleRune && rightIndex == newLetterIndex) {
-            newCurrentRune=RightRune
+          } else if (currentRune == MiddleRune && rightIndex == newLetterIndex) {
+            newCurrentRune = RightRune
             ">."
-          }else if (currentRune == RightRune && middleIndex == newLetterIndex) {
-            newCurrentRune=MiddleRune
+          } else if (currentRune == RightRune && middleIndex == newLetterIndex) {
+            newCurrentRune = MiddleRune
             "<."
-          }else if (currentRune == LeftRune && middleIndex == newLetterIndex) {
-            newCurrentRune=MiddleRune
+          } else if (currentRune == LeftRune && middleIndex == newLetterIndex) {
+            newCurrentRune = MiddleRune
             ">."
-          }else if (currentRune == LeftRune && rightIndex == newLetterIndex) {
-            newCurrentRune=RightRune
+          } else if (currentRune == LeftRune && rightIndex == newLetterIndex) {
+            newCurrentRune = RightRune
             ">>."
-          }else /*if (currentRune == RightRune && leftIndex == newLetterIndex)*/ {
-            newCurrentRune=LeftRune
+          } else /*if (currentRune == RightRune && leftIndex == newLetterIndex)*/ {
+            newCurrentRune = LeftRune
             "<<."
           }
         }
@@ -589,6 +589,10 @@ object Player extends App {
                     )
     }
   }
+}
+
+object Main extends App {
+  import Player._
 
   val magicphrase: String =
     'A'.to('Z')
