@@ -268,6 +268,24 @@ object Player /*extends App*/ {
   max switch to closest letter index = ">>>>" or "<<<<" = +4
   if `spell` consist only one `letter` use 'space0'
    */
+  /*
+  new strategy:
+   [-3]     -2      {-1}   [0]     {1}      2     [3]
+    [0]      1      {2*}   [3]     {4}      5     [6]      [7]
+  [space][Letter][Letter][space][Letter][Letter][space][activeRune]
+  reserve '2' & '4' for most frequent symbols / letter
+  set them first at initialization
+  if one letter then [activeRune]=2
+  if two letters then [activeRune]=2 for most frequent
+  and then
+  if {2}.letterIndex is not equal to spell.head
+  set {4}.letterIndex to second most frequent letter / symbol
+  or wait until 'spell.head' be equal 1st, 2nd most frequent
+  and set them in turn
+  for any other symbol do not use {2} & {4}
+  once set (reserved) they must stay unchanged
+  if `spell` consist only one `letter` use 'space0'
+   */
   /*content must change effected by encoding to mirror forest state*/
   val runeFrame: Array[Byte] =
   //new Array[Byte](7)
