@@ -261,9 +261,9 @@ object Player /*extends App*/ {
   */
   /*
   new strategy:
-  -3      -2      -1        0       1       2      3
-     0       1       2      3       4       5      6
-  [space][Letter][Letter][space][Letter][Letter][space]
+   [-3]     -2      -1     [0]       1       2     [3]
+    [0]      1       2     [3]       4       5     [6]      [7]
+  [space][Letter][Letter][space][Letter][Letter][space][activeRune]
   max `space` length = "<.>" or ">.<" = +3
   max switch to closest letter index = ">>>>" or "<<<<" = +4
   if `spell` consist only one `letter` use 'space0'
@@ -271,12 +271,26 @@ object Player /*extends App*/ {
   /*content must change effected by encoding to mirror forest state*/
   val runeFrame: Array[Byte] =
   //new Array[Byte](7)
-    Array().padTo(len = 7, elem = 0.toByte)
+    Array().padTo(len = 8, elem = 0.toByte)
+
   /*'runeFrame' index pointer*/
-  var activeRune: Byte =
+  //var activeRune: Byte =
   //0 for forest
-    3 //for 'runeFrame' center
+  //2 //for 'runeFrame' center ? or '2' or '4' ?
   //val symbolsFrequencyMap =
+  def reSetRuneFrame(/*runeFrame: Array[Byte]*/): Array[Byte] /*Unit*/ = {
+    /*side effect*/
+    /*runeFrame
+      /*'map' return new collection not change existing*/
+      .map(_ => 0 /*.toByte*/)*/
+    for (i <- runeFrame.indices) {
+      runeFrame(i) = 0
+    }
+    //activeRune = 2
+    runeFrame(7) = 2
+    /*return value*/
+    runeFrame
+  }
 
   def getPlusPath(oldIndex: Byte, newIndex: Byte): Byte =
     if (oldIndex > newIndex) {
@@ -301,13 +315,25 @@ object Player /*extends App*/ {
     }
 
   def getPrefix(
+                 /*zone index*/
                  closestIndex: Byte,
-                 currentActiveRuneSymbolIndex: Byte
+                 /*active zone index*/
+                 activeRuneZone: Byte
                  ): String =
   {
-    if (closestIndex == 1 && currentActiveRuneSymbolIndex == 2) {
+    /*List(1, 2)|List(1, 4)|List(1, 5)|List(2, 4)|List(2, 5)|List(4, 5)*/
+    if (closestIndex == activeRuneZone) {
       /*return value*/
-      ">"
+      ""
+    } else if (closestIndex < activeRuneZone) {
+      /*return value*/
+      ">" * (activeRuneZone - closestIndex)
+    } else /*if (closestIndex > currentActiveRuneSymbolIndex)*/ {
+      /*return value*/
+      "<" * (closestIndex - activeRuneZone)
+    } /*else if (closestIndex == 1 && currentActiveRuneSymbolIndex == 2) {
+      /*return value*/
+      ">"//(2-1)*">"
     } else if (closestIndex == 2 && currentActiveRuneSymbolIndex == 1) {
       /*return value*/
       "<"
@@ -334,14 +360,14 @@ object Player /*extends App*/ {
       "<<<<"
     } else if (closestIndex == 1 && currentActiveRuneSymbolIndex == 5) {
       /*return value*/
-      ">>>>"
+      ">>>>"//(5-1)*">"
     } else if (closestIndex == 4 && currentActiveRuneSymbolIndex == 5) {
       /*return value*/
       ">"
     } else /*if (closestIndex == 5 && currentActiveRuneSymbolIndex == 4)*/ {
       /*return value*/
       "<"
-    }
+    }*/
   }
 
   /*careful with [Byte] because value may be out of Range from '-128 to 127'*/
@@ -352,7 +378,10 @@ object Player /*extends App*/ {
                     ): /*Char*/ String =
   {
     var newControl: String = ""
-    val currentActiveRuneSymbolIndex: Byte = runeFrame(activeRune)
+    var activeRune = runeFrame(7)
+
+    val currentActiveRuneSymbolIndex: Byte =
+      runeFrame(activeRune)
     val alphabetLength: Byte =
       27
     val thresholdLength: Byte =
@@ -369,7 +398,7 @@ object Player /*extends App*/ {
     var distanceMod: Byte =
       ((newLetterIndex - currentActiveRuneSymbolIndex) % alphabetLength)
         .toByte
-    var plusPath: Byte =
+    /*val plusPath: Byte =
       if (currentActiveRuneSymbolIndex > newLetterIndex) {
         (alphabetLength - currentActiveRuneSymbolIndex + newLetterIndex)
           .toByte
@@ -379,7 +408,7 @@ object Player /*extends App*/ {
       } else {
         0
       }
-    var minusPath: Byte =
+    val minusPath: Byte =
       if (currentActiveRuneSymbolIndex > newLetterIndex) {
         (currentActiveRuneSymbolIndex - newLetterIndex)
           .toByte
@@ -388,9 +417,10 @@ object Player /*extends App*/ {
           .toByte
       } else {
         0
-      }
+      }*/
 
     if (symbolsFrequencyMap.size == 1) {
+      /*special test case*/
       /*one symbol only, using initial 'activeRune' & no else*/
       /*side effect*/
       runeFrame(activeRune) = newLetterIndex
@@ -401,6 +431,11 @@ object Player /*extends App*/ {
         "."
       } else {
         /*not a 'space', not same letter*/
+        val plusPath: Byte =
+          getPlusPath(currentActiveRuneSymbolIndex, newLetterIndex)
+        val minusPath: Byte =
+          getMinusPath(currentActiveRuneSymbolIndex, newLetterIndex)
+
         if (
           plusPath > minusPath
         ) {
@@ -414,14 +449,14 @@ object Player /*extends App*/ {
         }
       }
     } else {
+      /*general case*/
       /*
       TODO
       check & fix it
       because pick not optimal up to '26' length path
        */
-      val (closestIndex, closestMinusPath, closestPlusPath, _, _): (Byte, Byte, Byte, Byte, Byte) =
-        (
-        for (i <- Set(1, 2, 4, 5)) yield (
+      val frameOptions: List[(Byte, Byte, Byte, Byte, Byte)] =
+        for (i <- /*Set*/ List(1, 2, 4, 5)) yield (
           i.toByte,
           getMinusPath(runeFrame(i), newLetterIndex),
           getPlusPath(runeFrame(i), newLetterIndex),
@@ -429,97 +464,151 @@ object Player /*extends App*/ {
             .min(getPlusPath(runeFrame(i), newLetterIndex)),
           scala.math.abs(activeRune - i).toByte
           )
-        )
-          /*if shortest distance is same for at least two index then pick closest to `activeRune`*/
+      val minPathFilter =
+        frameOptions
           .min(
-            //Ordering.by[(Byte, Byte, Byte, Byte), Byte](_._4)
-            // sort by the 4th element, then 5th
-            Ordering[(Byte, Byte)]
-            //Ordering[(Byte, Byte, Byte, Byte, Byte),(Byte, Byte)]
-            //Ordering[(_, _, Byte, Byte),(Byte, Byte)]
-              .on((x:(Byte, Byte, Byte, Byte, Byte)) => (x._4, x._5))
+            Ordering.by[(Byte, Byte, Byte, Byte, Byte), Byte](_._4)
               )
 
-      /*case for 'space' '<.>' or '>.<' length '3' max*/
+      val (closestRuneIndex, closestMinusPath, closestPlusPath, _, _): (Byte, Byte, Byte, Byte, Byte) =
+      /*(
+        /*?set is unordered? but exist 'SortedSet' & 'TreeSet'*/
+      for (i <- Set(1, 2, 4, 5)) yield (
+        i.toByte,
+        getMinusPath(runeFrame(i), newLetterIndex),
+        getPlusPath(runeFrame(i), newLetterIndex),
+        getMinusPath(runeFrame(i), newLetterIndex)
+          .min(getPlusPath(runeFrame(i), newLetterIndex)),
+        scala.math.abs(activeRune - i).toByte
+        )
+      )*/
+      /*if shortest distance is same for at least two index then pick closest to `activeRune`*/
+        frameOptions
+          //.minBy(x=>x)
+          .min(
+            //Ordering.Byte
+            // sort by the 4th element, then 5th
+            Ordering[(Byte, Byte)]
+              .on((x: (Byte, Byte, Byte, Byte, Byte)) => (x._4, x._5))
+              )
+
+      /*'runeFrame' state must confirm / concord newly created 'controls'*/
       if (
+        closestRuneIndex == activeRune &&
+        (closestMinusPath == 0 ||
+         closestPlusPath == 0)) {
+        /*same symbol at current zone*/
+        /*same 'runeFrame' symbol state*/
+        /*return value*/
+        "."
+      } else if (
+        closestRuneIndex == activeRune &&
+        newLetterIndex > 0 &&
+        (closestMinusPath > 0 &&
+         closestPlusPath > 0)) {
+        /*side effect*/
+        /*'runeFrame' state update*/
+        /*activeRune = closestRuneIndex
+        runeFrame(7) = activeRune*/
+        runeFrame(activeRune) = newLetterIndex
+
+        /*changing in place*/
+        if (closestMinusPath > closestPlusPath) {
+          /*return value*/
+          "+" * closestPlusPath + "."
+        } else {
+          /*return value*/
+          "-" * closestMinusPath + "."
+        }
+      } else if (
+        closestRuneIndex != activeRune &&
+        newLetterIndex > 0 &&
+        (closestMinusPath == 0 ||
+         closestPlusPath == 0)) {
+        /*same symbol in the neighbor zone*/
+        /*[1][2]_[4][5]*/
+        /*.combinations(2)*/
+        /*List(1, 2)|List(1, 4)|List(1, 5)|List(2, 4)|List(2, 5)|List(4, 5)*/
+
+        newControl =
+          getPrefix(
+                     closestRuneIndex: Byte,
+                     activeRune: Byte
+                   ) + "."
+
+        /*side effect*/
+        /*'runeFrame' state update*/
+        activeRune = closestRuneIndex
+        runeFrame(7) = activeRune
+        //runeFrame(activeRune) = newLetterIndex
+
+        /*return value*/
+        newControl
+      } else if (
+        closestRuneIndex != activeRune &&
+        newLetterIndex > 0 &&
+        (closestMinusPath > 0 &&
+         closestPlusPath > 0)) {
+        /*must change symbol in the neighbor zone*/
+        val control: String =
+          getPrefix(
+                     closestRuneIndex: Byte,
+                     activeRune: Byte
+                   ) +
+          (if (closestMinusPath > closestPlusPath) {
+            "+" * closestPlusPath
+          } else {
+            "-" * closestMinusPath
+          }) + "."
+
+        /*side effect*/
+        /*'runeFrame' state update*/
+        activeRune = closestRuneIndex
+        runeFrame(7) = activeRune
+        runeFrame(activeRune) = newLetterIndex
+
+        /*return value*/
+        control
+      } else if (
         newLetterIndex == 0 &&
         (closestMinusPath >= 3 ||
          closestPlusPath >= 3)
       ) {
+        /*case for 'space' '<.>' or '>.<' length '3' max*/
         /*'runeFrame' stays unchanged*/
-        if (closestIndex == 2 || closestIndex == 5) {
+        if (closestRuneIndex == 2 || closestRuneIndex == 5) {
           /*return value*/
           ">.<"
-        } else /*if (closestIndex == 1 || closestIndex == 4)*/ {
+        } else /*if (closestRuneIndex == 1 || closestRuneIndex == 4)*/ {
           /*return value*/
           "<.>"
         }
-      } else {
-        /*'runeFrame' must confirm / concord newly created 'controls'*/
-        if (
-          closestIndex == currentActiveRuneSymbolIndex &&
-          (closestMinusPath == 0 ||
-           closestPlusPath == 0)) {
-          /*same symbol*/
-          /*same 'runeFrame' symbol state*/
-          /*return value*/
-          "."
-        } else if (
-          closestIndex == currentActiveRuneSymbolIndex &&
-          (closestMinusPath != 0 &&
-           closestPlusPath != 0)) {
-          /*side effect*/
-          /*'runeFrame' state update*/
-          activeRune = closestIndex
-          runeFrame(activeRune) = newLetterIndex
-
-          /*changing in place*/
-          if (closestMinusPath > closestPlusPath) {
-            /*return value*/
-            "+" * plusPath + "."
-          } else {
-            /*return value*/
-            "-" * minusPath + "."
-          }
-        } else if (
-          closestIndex != currentActiveRuneSymbolIndex &&
-          (closestMinusPath == 0 ||
-           closestPlusPath == 0)) {
-          /*same symbol*/
-          /*[1][2]_[4][5]*/
-          /*.combinations(2)*/
-          /*List(1, 2)|List(1, 4)|List(1, 5)|List(2, 4)|List(2, 5)|List(4, 5)*/
-          /*side effect*/
-          /*'runeFrame' state update*/
-          activeRune = closestIndex
-          runeFrame(activeRune) = newLetterIndex
-
+      } else /*if (
+        newLetterIndex == 0 &&
+        (closestMinusPath < 3 ||
+         closestPlusPath < 3)
+      )*/ {
+        /*must change symbol to 'space' somewhere*/
+        val control: String =
           getPrefix(
-                     closestIndex: Byte,
-                     currentActiveRuneSymbolIndex: Byte
-                   ) + "."
-        } else /*if (
-          closestIndex != currentActiveRuneSymbolIndex &&
-          (closestMinusPath != 0 &&
-           closestPlusPath != 0))*/ {
-          /*side effect*/
-          /*'runeFrame' state update*/
-          activeRune = closestIndex
-          runeFrame(activeRune) = newLetterIndex
-
-          getPrefix(
-                     closestIndex: Byte,
-                     currentActiveRuneSymbolIndex: Byte
+                     closestRuneIndex: Byte,
+                     activeRune: Byte
                    ) +
           (if (closestMinusPath > closestPlusPath) {
-            "+" * plusPath
+            "+" * closestPlusPath
           } else {
-            "-" * minusPath
+            "-" * closestMinusPath
           }) + "."
-        }
-      }
 
-      /*return value*/
+        /*side effect*/
+        /*'runeFrame' state update*/
+        activeRune = closestRuneIndex
+        runeFrame(7) = activeRune
+        runeFrame(activeRune) = newLetterIndex
+
+        /*return value*/
+        control
+      }
       //""
     }
   }
@@ -873,11 +962,40 @@ object Player /*extends App*/ {
                     )
     }
   }
+
+  /*initialization*/
+  reSetRuneFrame()
 }
 
 object Main extends App {
 
   import Player._
+
+  def showPath(
+                fromIndex: Byte,
+                pathLength: Byte
+                ): String =
+  {
+    magicAlphabet
+      .drop(fromIndex)
+      .take(
+        if (pathLength > (27 - fromIndex)) {
+          27 - 0
+        } else {
+          pathLength
+        }
+           )
+      .mkString("[", "", "]") +
+    magicAlphabet
+      .take(
+        if (pathLength > (27 - fromIndex)) {
+          pathLength % (27 - fromIndex)
+        } else {
+          0
+        }
+           )
+      .mkString("[", "", "]")
+  }
 
   val magicphrase: String =
     'A'.to('Z')
@@ -928,7 +1046,8 @@ object Main extends App {
                                   )
            }"
          )
-  println(s"activeRune:${ activeRune }")
+  println(s"activeRune:${ runeFrame(7) /*activeRune*/ }")
+  reSetRuneFrame()
   println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
 
   /*
@@ -978,7 +1097,10 @@ object Main extends App {
   val spell: String =
   //"A"
   //"Z"
-  //"AZ"
+    "AZ"
+  //"ZA"
+  //"BY"
+  //"YB"
   //"S"
   //"AS"
   //"UMNE TALMAR R"
@@ -989,7 +1111,7 @@ object Main extends App {
   //  "ISTA" //spellOutPhrase I9STA:++++.++++++++++.+.>>. 13-9=4
   //"GUZ M"
   //  "NA"
-    "MINAS"
+  //  "MINAS"
   //"E T"
   //"Magic Unicorn".toUpperCase
   println(
@@ -1006,8 +1128,12 @@ object Main extends App {
                            )
            }"
          )
+  //reSetRuneFrame()
+  //.compose
+  //.andThen
+  println(s"runeFrame:${ reSetRuneFrame().mkString("[", "|", "]") }")
   println(
-           s"encodePhrase $spell:${
+           s"encodePhrase using 1 $spell:${
              encodePhrase(
                            magicPhrase =
                              spell,
@@ -1015,6 +1141,20 @@ object Main extends App {
                          )
            }"
          )
+  reSetRuneFrame()
+  println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
+  println(
+           s"encodePhrase using all $spell:${
+             encodePhrase(
+                           magicPhrase =
+                             spell,
+                           symbolsFrequencyMap =
+                             SpellLettersFrequency(spell)
+                         )
+           }"
+         )
+  reSetRuneFrame()
+  println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
   println(
            s"encodeSymbol 'A':${
              encodeSymbol(
@@ -1024,6 +1164,8 @@ object Main extends App {
                          )
            }"
          )
+  reSetRuneFrame()
+  println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
   println(
            s"encodeSymbol 'M':${
              encodeSymbol(
@@ -1033,8 +1175,10 @@ object Main extends App {
                          )
            }"
          )
+  reSetRuneFrame()
+  println(s"runeFrame:${ runeFrame.mkString("[", "|", "]") }")
   println(
-           s"encodeSymbol 'Z':${
+           s"encodeSymbol 'Z' with 1st method:${
              encodeSymbol(
                            spellLetter =
                              'Z',
@@ -1043,12 +1187,26 @@ object Main extends App {
            }"
          )
 
+  println(s"runeFrame:${ reSetRuneFrame().mkString("[", "|", "]") }")
+  println(
+           s"encodeSymbol 'Z' with newest method:${
+             encodeSymbol(
+                           spellLetter =
+                             'Z',
+                           symbolsFrequencyMap =
+                             SpellLettersFrequency("AZ")
+                         )
+           }"
+         )
+
+  reSetRuneFrame()
   val encodePhraseLongSpell1 =
     encodePhrase(
                   magicPhrase =
                     longSpell,
                   symbolsFrequencyMap = Map('A' -> 1)
                 )
+  reSetRuneFrame()
   val encodePhraseLongSpell2 =
     encodePhrase(
                   magicPhrase =
@@ -1073,25 +1231,202 @@ object Main extends App {
            }"
          )*/
   println(
-           s"longSpell :${
+           s"longSpell :\n${
              longSpell
            }"
          )
   println(
-           s"spellOutPhraseLongSpell.length = ${ spellOutPhraseLongSpell.length }:${
-             spellOutPhraseLongSpell
+           s"encodePhraseLongSpell1.length using 1st strategy= ${ encodePhraseLongSpell1.length }:\n${
+              encodePhraseLongSpell1
            }"
          )
   println(
-           s"encodePhraseLongSpell1.length 1st strategy= ${ encodePhraseLongSpell1.length }:${
-             encodePhraseLongSpell1
-           }"
-         )
-  println(
-           s"encodePhraseLongSpell2.length 3st strategy= ${ encodePhraseLongSpell2.length }:${
+           s"encodePhraseLongSpell2.length using 3rd strategy= ${ encodePhraseLongSpell2.length }:\n${
              encodePhraseLongSpell2
            }"
          )
+  println(
+           s"${
+             spellOutPhraseLongSpell
+           }\nspellOutPhraseLongSpell.length using 2nd strategy= ${
+             spellOutPhraseLongSpell.length }"
+         )
+
+  /*val pPath0to1 = getPlusPath(
+                               oldIndex = 0 /*'space'*/ ,
+                               newIndex = 1 //'A"
+                             )
+  val mPath0to1 = getMinusPath(
+                               oldIndex = 0 /*'space'*/ ,
+                               newIndex = 1 //'A"
+                             )
+
+  println(
+           s"'getPlusPath' from '0' to '1'$pPath0to1:${
+             showPath(
+                       fromIndex=0,
+                       pathLength=pPath0to1
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '0' to '1'$mPath0to1:${
+             showPath(
+                       fromIndex=0,
+                       pathLength=mPath0to1
+                     )
+           }"
+         )
+  val pPath0to26 = getPlusPath(
+                               oldIndex = 0 /*'space'*/ ,
+                               newIndex = 26 //'A"
+                             )
+  val mPath0to26 = getMinusPath(
+                                oldIndex = 0 /*'space'*/ ,
+                                newIndex = 26 //'A"
+                              )
+
+  println(
+           s"'getPlusPath' from '0' to '26'$pPath0to26:${
+             showPath(
+                       fromIndex=0,
+                       pathLength=pPath0to26
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '0' to '26'$mPath0to26:${
+             showPath(
+                       fromIndex=0,
+                       pathLength=mPath0to26
+                     )
+           }"
+         )
+  val pPath1to12 = getPlusPath(
+                                oldIndex = 1 /*'space'*/ ,
+                                newIndex = 12 //'A"
+                              )
+  val mPath1to12 = getMinusPath(
+                                 oldIndex = 1 /*'space'*/ ,
+                                 newIndex = 12 //'A"
+                               )
+
+  println(
+           s"'getPlusPath' from '1' to '12'$pPath1to12:${
+             showPath(
+                       fromIndex=1,
+                       pathLength=pPath1to12
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '1' to '12'$mPath1to12:${
+             showPath(
+                       fromIndex=1,
+                       pathLength=mPath1to12
+                     )
+           }"
+         )
+  val pPath5to17 = getPlusPath(
+                                oldIndex = 5 /*'space'*/ ,
+                                newIndex = 17 //'A"
+                              )
+  val mPath5to17 = getMinusPath(
+                                 oldIndex = 5 /*'space'*/ ,
+                                 newIndex = 17 //'A"
+                               )
+
+  println(
+           s"'getPlusPath' from '5' to '17'$pPath5to17:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=pPath5to17
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '5' to '17'$mPath5to17:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=mPath5to17
+                     )
+           }"
+         )
+  val pPath5to18 = getPlusPath(
+                                oldIndex = 5 /*'space'*/ ,
+                                newIndex = 18 //'A"
+                              )
+  val mPath5to18 = getMinusPath(
+                                 oldIndex = 5 /*'space'*/ ,
+                                 newIndex = 18 //'A"
+                               )
+
+  println(
+           s"'getPlusPath' from '5' to '18'$pPath5to18:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=pPath5to18
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '5' to '18'$mPath5to18:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=mPath5to18
+                     )
+           }"
+         )
+  val pPath5to19 = getPlusPath(
+                                oldIndex = 5 /*'space'*/ ,
+                                newIndex = 19 //'A"
+                              )
+  val mPath5to19 = getMinusPath(
+                                 oldIndex = 5 /*'space'*/ ,
+                                 newIndex = 19 //'A"
+                               )
+
+  println(
+           s"'getPlusPath' from '5' to '19'$pPath5to19:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=pPath5to19
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '5' to '19'$mPath5to19:${
+             showPath(
+                       fromIndex=5,
+                       pathLength=mPath5to19
+                     )
+           }"
+         )
+  val pPath19to5 = getPlusPath(
+                                oldIndex = 19 /*'space'*/ ,
+                                newIndex = 5 //'A"
+                              )
+  val mPath19to5 = getMinusPath(
+                                 oldIndex = 19 /*'space'*/ ,
+                                 newIndex = 5 //'A"
+                               )
+
+  println(
+           s"'getPlusPath' from '19' to '5'$pPath19to5:${
+             showPath(
+                       fromIndex=19,
+                       pathLength=pPath19to5
+                     )
+           }"
+         )
+  println(
+           s"'getMinusPath' from '5' to '19'$mPath19to5:${
+             showPath(
+                       fromIndex=19,
+                       pathLength=mPath19to5
+                     )
+           }"
+         )*/
 
   val testBeacon: Boolean = true
 }
