@@ -312,7 +312,7 @@ object SolutionMain extends App {
         localInputFileContent(i + 2 + n)
       val findMatch =
         extTypeMap
-        .find(_.ext.toLowerCase == Solution.findExtension(fname))
+        .find(_.ext.toLowerCase == Solution.findExtension(fname).toLowerCase)
       /*return value*/
       findMatch match {
         case None                                      =>
@@ -324,39 +324,6 @@ object SolutionMain extends App {
   }
 
   /*
-  TODO
-  fix case:
-  3
-  10
-  wav audio/x-wav
-  mp3 audio/mpeg
-  pdf application/pdf
-  a
-  a.wav
-  b.wav.tmp
-  test.vmp3
-  pdf
-  mp3
-  report..pdf
-  defaultwav
-  .mp3.
-  final.
-
-  Console output:
-  +UNKNOWN
-  +audio/x-wav
-  +UNKNOWN
-  +UNKNOWN
-  +UNKNOWN
-  +UNKNOWN
-  +application/pdf
-  +UNKNOWN
-  >audio/mpeg
-  +UNKNOWN
-
-  Fail
-    Found:    "a"
-    Expected: "U"
    */
   println(s"findExtension('a.a'):${findExtension("a.a")}")
   println(s"findExtension('a.'):${findExtension("a.")}")

@@ -102,7 +102,61 @@ class testMIME_typeSuit extends FunSuite {
                 )
         }
   test(
-        "4: 'findExtension' result should match 'UNKNOWN' if no extension"
+        "4: 'returnMIME_types' result should match 'Test_4_output.txt'"
+      ) {
+          val testPath: String =
+            "/home/gluk-alex/Documents/codingameChallenge/src" +
+              "/test/scala" +
+              "/testMIME_type/SimpleExample/"+
+              "ConsiderationOfTheCase/"
+          val testOutputVector: Vector[String] =
+            getFileContent(
+                            "Test_4_output.txt",
+                            testPath
+                          ).toVector
+          val testOutputResultVector: Vector[String] =
+            returnMIME_types(
+                              "Test_4_input.txt",
+                                testPath
+                            ).toVector
+
+          //assert(100000 == 100000)
+          assume(
+                  testOutputVector
+                    ==
+                    testOutputResultVector,
+                  "must be equal"
+                )
+        }
+  test(
+        "5: 'returnMIME_types' result should match 'Test_5_output.txt' (9999 * 2 entries)"
+      ) {
+          val testPath: String =
+            "/home/gluk-alex/Documents/codingameChallenge/src" +
+              "/test/scala" +
+              "/testMIME_type/SimpleExample/"+
+              "LargeDataset/"
+          val testOutputVector: Vector[String] =
+            getFileContent(
+                            "Test_5_output.txt",
+                            testPath
+                          ).toVector
+          val testOutputResultVector: Vector[String] =
+            returnMIME_types(
+                              "Test_5_input.txt",
+                                testPath
+                            ).toVector
+
+          //assert(100000 == 100000)
+          assume(
+                  testOutputVector
+                    ==
+                    testOutputResultVector,
+                  "must be equal"
+                )
+        }
+  test(
+        "6: 'findExtension' result should match 'UNKNOWN' if no extension"
       ) {
           lazy val ext =
             findExtension(".mp3.")
@@ -115,7 +169,7 @@ class testMIME_typeSuit extends FunSuite {
                 )
         }
   test(
-        "5: 'getFileContent' should work when path / file name is wrong "+
+        "7: 'getFileContent' should work when path / file name is wrong "+
           "(No such file or directory)"
       ) {
           lazy val fileIterator =

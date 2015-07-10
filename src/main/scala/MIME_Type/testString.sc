@@ -121,3 +121,10 @@ extTypeMap
   |"""
 .stripMargin
 .split("\n")
+val extAndType1: (String, String) =
+  "TXT" -> "text"
+val extAndType2: (String, String) =
+  "txt" -> "text"
+
+extAndType1._1.toLowerCase
+extAndType2._1.toLowerCase
