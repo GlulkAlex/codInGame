@@ -11,11 +11,11 @@ class testMIME_typeSuit extends FunSuite {
   import MIME_Type.SolutionMain._
 
   /*
-  TODO
+
   <OK>load 'input'
   <OK>load 'output'
-  >fetch 'input' to 'Solution'
-  >compare result with 'output'
+  <OK>fetch 'input' to 'Solution'
+  <OK>compare result with 'output'
    */
   test(
         "1: 'Test_3_input.txt' should have size 15 entries / lines"
@@ -50,20 +50,20 @@ class testMIME_typeSuit extends FunSuite {
             "/home/gluk-alex/Documents/codingameChallenge/src" +
               "/test/scala" +
               "/testMIME_type/SimpleExample/"
-          val testInput =
+          /*val testInput =
             getFileContent(
                             "Test_3_input.txt",
                             testPath +
                               "CorrectDivisionOfTheExtension/"
-                          )
+                          )*/
           val testOutputArray: Array[String] =
             getFileContent(
                             "Test_3_output.txt",
                             testPath +
                               "CorrectDivisionOfTheExtension/"
                           ).toArray
-          val testInputArray: Array[String] =
-            testInput.toArray
+          /*val testInputArray: Array[String] =
+            testInput.toArray*/
 
           //assert(100000 == 100000)
           assume(
@@ -91,7 +91,7 @@ class testMIME_typeSuit extends FunSuite {
             returnMIME_types(
                               "Test_3_input.txt",
                                 testPath
-                            ).toVector
+                            )//.toVector
 
           //assert(100000 == 100000)
           assume(
@@ -118,7 +118,7 @@ class testMIME_typeSuit extends FunSuite {
             returnMIME_types(
                               "Test_4_input.txt",
                                 testPath
-                            ).toVector
+                            )//.toVector
 
           //assert(100000 == 100000)
           assume(
@@ -145,7 +145,7 @@ class testMIME_typeSuit extends FunSuite {
             returnMIME_types(
                               "Test_5_input.txt",
                                 testPath
-                            ).toVector
+                            )//.toVector
 
           //assert(100000 == 100000)
           assume(

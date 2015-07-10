@@ -10,7 +10,7 @@ associate a media type
 (html, image, video ...) with the content sent.
 The MIME type is
 generally inferred from the extension of the file to be sent.
-TODO
+
 You have to
 write a program that
 makes it possible to
@@ -158,20 +158,22 @@ object Solution {
     val fileNameComponents: Array[String] =
       fileName
       .split('.')
+    val fileNameComponentsLength =
+      fileNameComponents.length
 
     if (
-    /*fileName.isEmpty ||
-      dotPosition == -1 ||*/
+      fileName.isEmpty ||
+      /*dotPosition == -1 ||*/
       fileName.endsWith(".") ||
         fileNameComponents.isEmpty ||
-        fileNameComponents.length <= 1
+        fileNameComponentsLength <= 1
     ) {
       "UNKNOWN"
     } else {
       /*fileName
       .drop(dotPosition)*/
-      //fileNameComponents(1)
-      fileNameComponents.last
+      fileNameComponents(fileNameComponentsLength - 1)
+      /*fileNameComponents.last*/
     }
   }
 
@@ -201,12 +203,22 @@ object Solution {
       inputFileContent(i + 2 + n)
 
     /*helper starts*/
-    extTypeMap
-    .find(_.ext.toLowerCase == findExtension(fname)) match {
-      case None                             =>
-            println("UNKNOWN")
-      case Some(ExtensionMIME(_, mimeType)) =>
-            println(mimeType)
+    val fExt: String =
+      findExtension(fname)
+      .toLowerCase
+
+    if (
+      fExt != "unknown" ||
+        extTypeMap.contains(fExt)    ) {
+      extTypeMap
+      .find(_.ext.toLowerCase == fExt) match {
+        case None                             =>
+          println("UNKNOWN")
+        case Some(ExtensionMIME(_, mimeType)) =>
+          println(mimeType)
+      }
+    } else {
+      println("UNKNOWN")
     }
     /*helper ends*/
   }
